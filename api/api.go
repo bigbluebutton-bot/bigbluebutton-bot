@@ -10,6 +10,9 @@ type api_request struct {
 	secret string
 }
 
+// Create an object for making http get api requests to the BBB server.
+// The requests are described here: https://bigbluebutton.org/api-mate/ and
+// https://docs.bigbluebutton.org/dev/api.html
 func NewRequest(url string, secret string) (api_request, error) {
 	
 	if !(strings.HasPrefix(url, "http://") || strings.HasPrefix(url, "https://")) {
