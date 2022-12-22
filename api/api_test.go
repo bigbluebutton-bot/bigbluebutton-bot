@@ -67,7 +67,8 @@ func TestNewRequest(t * testing.T) {
 type testgeneratechecksumsha256 struct {
 	action     string
 	params     []params
-	expected   string
+	expected_sha1   string
+	expected_sha256   string
 	shouldfail bool
 }
 
@@ -114,7 +115,8 @@ func TestGenerateChecksumSHA256(t *testing.T) {
 					value: "Hello",
 				},
 			},
-			expected:   "e29adcdff42ebe39f9e3f3a5d528d798cce15442f6bb9115f9fe288a482f16b2",
+			expected_sha1: "e9a7a7a51c8dfc1b53ab313b096307215325fc15",
+			expected_sha256:   "e29adcdff42ebe39f9e3f3a5d528d798cce15442f6bb9115f9fe288a482f16b2",
 			shouldfail: false,
 		},
 	}
@@ -123,13 +125,26 @@ func TestGenerateChecksumSHA256(t *testing.T) {
 
 	for num, test := range tests {
 		params := buildParams(test.params...)
-		result := bbbapi.generateChecksumSHA256(test.action, params)
 
-		if result != test.expected {
+		//Sha1
+		resultsha1 := bbbapi.generateChecksumSHA1(test.action, params)
+		if resultsha1 != test.expected_sha1 {
+			if test.shouldfail {
+				t.Logf("generateChecksumSHA1(%s,...) %b PASSED", test.action, num)
+			} else {
+				t.Errorf("generateChecksumSHA1(%s,...) %b FAILED: Cheksum is wrong: %s", test.action, num, bbbapi.url + test.action + "?" + params + "&checksum=" + resultsha1)
+			}
+		} else {
+			t.Logf("generateChecksumSHA1(%s,...) %b PASSED", test.action, num)
+		}
+
+		//Sha256
+		resultsha256 := bbbapi.generateChecksumSHA256(test.action, params)
+		if resultsha256 != test.expected_sha256 {
 			if test.shouldfail {
 				t.Logf("generateChecksumSHA256(%s,...) %b PASSED", test.action, num)
 			} else {
-				t.Errorf("generateChecksumSHA256(%s,...) %b FAILED: Cheksum is wrong: %s", test.action, num, bbbapi.url + test.action + "?" + params + "&checksum=" + result)
+				t.Errorf("generateChecksumSHA256(%s,...) %b FAILED: Cheksum is wrong: %s", test.action, num, bbbapi.url + test.action + "?" + params + "&checksum=" + resultsha256)
 			}
 		} else {
 			t.Logf("generateChecksumSHA256(%s,...) %b PASSED", test.action, num)

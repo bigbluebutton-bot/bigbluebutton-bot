@@ -67,3 +67,11 @@ func (api api_request) generateChecksumSHA256(action string, params string) stri
 	checksum.Write([]byte(action + params + api.secret))
 	return hex.EncodeToString(checksum.Sum(nil))
 }
+
+// Generate the SHA1 checksum for a api request.
+func (api api_request) generateChecksumSHA1(action string, params string) string {
+	//Generate sha256 and sha1 checksum
+	checksum := sha1.New()
+	checksum.Write([]byte(action + params + api.secret))
+	return hex.EncodeToString(checksum.Sum(nil))
+}
