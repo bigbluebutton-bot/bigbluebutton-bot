@@ -63,3 +63,76 @@ func TestNewRequest(t * testing.T) {
 		}
 	}
 }
+
+type testgeneratechecksumsha256 struct {
+	action     string
+	params     []params
+	expected   string
+	shouldfail bool
+}
+
+// Test for generateChecksumSHA256
+func TestGenerateChecksumSHA256(t *testing.T) {
+	tests := []testgeneratechecksumsha256{
+		{ //0 https://example.com/api/create?allowStartStopRecording=true&attendeePW=ap&autoStartRecording=false&meetingID=random-4026116&moderatorPW=mp&name=random-4026116&record=false&voiceBridge=70848&welcome=%3Cbr%3EWelcome+to+%3Cb%3E%25%25CONFNAME%25%25%3C%2Fb%3E%21&checksum=420805f07ee9e1b75537bcc22cea3586ec01be82565843ca83bfc3625aeac0ad
+			action: "create",
+			params: []params{
+				{
+					name:  "allowStartStopRecording",
+					value: "true",
+				},
+				{
+					name:  "attendeePW",
+					value: "ap",
+				},
+				{
+					name:  "autoStartRecording",
+					value: "false",
+				},
+				{
+					name:  "meetingID",
+					value: "random-4026116",
+				},
+				{
+					name:  "moderatorPW",
+					value: "mp",
+				},
+				{
+					name:  "name",
+					value: "random-4026116",
+				},
+				{
+					name:  "record",
+					value: "false",
+				},
+				{
+					name:  "voiceBridge",
+					value: "70848",
+				},
+				{
+					name:  "welcome",
+					value: "Hello",
+				},
+			},
+			expected:   "e29adcdff42ebe39f9e3f3a5d528d798cce15442f6bb9115f9fe288a482f16b2",
+			shouldfail: false,
+		},
+	}
+
+	bbbapi, _ := NewRequest("https://example.com/bigbluebutton/api/", "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX")
+
+	for num, test := range tests {
+		params := buildParams(test.params...)
+		result := bbbapi.generateChecksumSHA256(test.action, params)
+
+		if result != test.expected {
+			if test.shouldfail {
+				t.Logf("generateChecksumSHA256(%s,...) %b PASSED", test.action, num)
+			} else {
+				t.Errorf("generateChecksumSHA256(%s,...) %b FAILED: Cheksum is wrong: %s", test.action, num, bbbapi.url + test.action + "?" + params + "&checksum=" + result)
+			}
+		} else {
+			t.Logf("generateChecksumSHA256(%s,...) %b PASSED", test.action, num)
+		}
+	}
+}

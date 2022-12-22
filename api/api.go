@@ -1,6 +1,9 @@
 package api
 
 import (
+	"crypto/sha1"
+	"crypto/sha256"
+	"encoding/hex"
 	"errors"
 	"strings"
 )
@@ -37,4 +40,30 @@ func NewRequest(url string, secret string) (api_request, error) {
 		url: url,
 		secret: secret,
 	}, nil
+}
+
+type params struct {
+	name string
+	value string
+}
+func buildParams(params ...params) string {
+	var param string
+	for count, p := range params {
+		if count == 0 {
+			param = p.name + string("=") + p.value
+			continue
+		}
+		param = param + string("&") + p.name + string("=") + p.value
+	}
+	return param
+}
+
+
+
+// Generate the SHA256 checksum for a api request.
+func (api api_request) generateChecksumSHA256(action string, params string) string {
+	//Generate sha256 and sha1 checksum
+	checksum := sha256.New()
+	checksum.Write([]byte(action + params + api.secret))
+	return hex.EncodeToString(checksum.Sum(nil))
 }
