@@ -8,20 +8,36 @@ import (
 	"strings"
 )
 
+type sha int64
+
+const (
+	SHA1   sha = 0
+	SHA256 sha = 1
+)
+
 type api_request struct {
-	url string
-	secret string
+	url     string
+	secret  string
+	shatype sha
 }
 
 // Create an object for making http get api requests to the BBB server.
 // The requests are described here: https://bigbluebutton.org/api-mate/ and
 // https://docs.bigbluebutton.org/dev/api.html
-func NewRequest(url string, secret string) (api_request, error) {
-	
+func NewRequest(url string, secret string, shatype sha) (api_request, error) {
+
+	switch shatype {
+	case SHA1:
+		break
+	case SHA256:
+		break
+	default:
+		shatype = SHA256
+	}
+
 	if !(strings.HasPrefix(url, "http://") || strings.HasPrefix(url, "https://")) {
 		return api_request{}, errors.New("url has the wrong format. It should look like this: https://example.com/api/")
 	}
-
 
 	if !strings.HasSuffix(url, "/") {
 		//Add / to the end of the url
@@ -35,17 +51,19 @@ func NewRequest(url string, secret string) (api_request, error) {
 	if len(secret) != 40 {
 		return api_request{}, errors.New("secret must be 40 characters")
 	}
-	
+
 	return api_request{
-		url: url,
-		secret: secret,
+		url:     url,
+		secret:  secret,
+		shatype: shatype,
 	}, nil
 }
 
 type params struct {
-	name string
+	name  string
 	value string
 }
+
 func buildParams(params ...params) string {
 	var param string
 	for count, p := range params {
@@ -58,7 +76,18 @@ func buildParams(params ...params) string {
 	return param
 }
 
-
+// Generate the checksum for a api request.
+// The checksum is generated with the sha1 or sha256 algorithm.
+func (api api_request) generateChecksum(action string, params string) string {
+	switch api.shatype {
+	case SHA1:
+		return api.generateChecksumSHA1(action, params)
+	case SHA256:
+		return api.generateChecksumSHA256(action, params)
+	default:
+		return ""
+	}
+}
 
 // Generate the SHA256 checksum for a api request.
 func (api api_request) generateChecksumSHA256(action string, params string) string {
