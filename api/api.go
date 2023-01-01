@@ -67,11 +67,14 @@ type params struct {
 func buildParams(params ...params) string {
 	var param string
 	for count, p := range params {
+		name := strings.ReplaceAll(p.name, " ", "+")
+		value := strings.ReplaceAll(p.value, " ", "+")
+
 		if count == 0 {
-			param = p.name + string("=") + p.value
+			param = name + string("=") + value
 			continue
 		}
-		param = param + string("&") + p.name + string("=") + p.value
+		param = param + string("&") + name + string("=") + value
 	}
 	return param
 }

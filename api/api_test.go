@@ -100,9 +100,10 @@ type testgeneratechecksum struct {
 }
 
 // Test for generateChecksum
+// https://mconf.github.io/api-mate/
 func TestGenerateChecksum(t *testing.T) {
 	tests := []testgeneratechecksum{
-		{ //0 https://example.com/api/create?allowStartStopRecording=true&attendeePW=ap&autoStartRecording=false&meetingID=random-4026116&moderatorPW=mp&name=random-4026116&record=false&voiceBridge=70848&welcome=%3Cbr%3EWelcome+to+%3Cb%3E%25%25CONFNAME%25%25%3C%2Fb%3E%21&checksum=420805f07ee9e1b75537bcc22cea3586ec01be82565843ca83bfc3625aeac0ad
+		{ //0
 			action: "create",
 			params: []params{
 				{
@@ -139,11 +140,11 @@ func TestGenerateChecksum(t *testing.T) {
 				},
 				{
 					name:  "welcome",
-					value: "Hello",
+					value: "Hello you there",
 				},
 			},
-			expected_sha1:   "e9a7a7a51c8dfc1b53ab313b096307215325fc15",
-			expected_sha256: "e29adcdff42ebe39f9e3f3a5d528d798cce15442f6bb9115f9fe288a482f16b2",
+			expected_sha1:   "2c2f2b2f6050bda0ff2c6dacd9d51e09951810ae",
+			expected_sha256: "ae982d76751077e4e1eae8a667d5f74fe4f9c9a9df7d30ff2e56b3a025f1828d",
 			shouldfail:      false,
 		},
 	}
