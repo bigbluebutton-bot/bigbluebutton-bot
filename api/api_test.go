@@ -67,10 +67,10 @@ func TestNewRequest(t *testing.T) {
 			shouldfail: false,
 		},
 		{ //5
-			url:     "http://example.com",
-			secret:  "XXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-			shatype: SHA256,
-			expected: api_request{},
+			url:        "http://example.com",
+			secret:     "XXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+			shatype:    SHA256,
+			expected:   api_request{},
 			shouldfail: true,
 		},
 	}
@@ -80,13 +80,13 @@ func TestNewRequest(t *testing.T) {
 		fmt.Println(test.shatype)
 
 		if err != nil && !test.shouldfail {
-			t.Errorf("NewRequest(%s,%s) %b FAILED: Error %s", test.url, test.secret, num, err)
+			t.Errorf("NewRequest(%s,%s) %d FAILED: Error %s", test.url, test.secret, num, err)
 		}
 
 		if !reflect.DeepEqual(result, test.expected) {
-			t.Errorf("NewRequest(%s,%s) %b FAILED: Object is not correct", test.url, test.secret, num)
+			t.Errorf("NewRequest(%s,%s) %d FAILED: Object is not correct", test.url, test.secret, num)
 		} else {
-			t.Logf("NewRequest(%s,%s) %b PASSED", test.url, test.secret, num)
+			t.Logf("NewRequest(%s,%s) %d PASSED", test.url, test.secret, num)
 		}
 	}
 }
@@ -159,24 +159,24 @@ func TestGenerateChecksum(t *testing.T) {
 		resultsha1 := bbbapi_sha1.generateChecksum(test.action, params)
 		if resultsha1 != test.expected_sha1 {
 			if test.shouldfail {
-				t.Logf("generateChecksumSHA1(%s,...) %b PASSED", test.action, num)
+				t.Logf("generateChecksumSHA1(%s,...) %d PASSED", test.action, num)
 			} else {
-				t.Errorf("generateChecksumSHA1(%s,...) %b FAILED: Cheksum is wrong: %s", test.action, num, bbbapi_sha1.url+test.action+"?"+params+"&checksum="+resultsha1)
+				t.Errorf("generateChecksumSHA1(%s,...) %d FAILED: Cheksum is wrong: %s", test.action, num, bbbapi_sha1.url+test.action+"?"+params+"&checksum="+resultsha1)
 			}
 		} else {
-			t.Logf("generateChecksumSHA1(%s,...) %b PASSED", test.action, num)
+			t.Logf("generateChecksumSHA1(%s,...) %d PASSED", test.action, num)
 		}
 
 		//Sha256
 		resultsha256 := bbbapi_sha256.generateChecksum(test.action, params)
 		if resultsha256 != test.expected_sha256 {
 			if test.shouldfail {
-				t.Logf("generateChecksumSHA256(%s,...) %b PASSED", test.action, num)
+				t.Logf("generateChecksumSHA256(%s,...) %d PASSED", test.action, num)
 			} else {
-				t.Errorf("generateChecksumSHA256(%s,...) %b FAILED: Cheksum is wrong: %s", test.action, num, bbbapi_sha256.url+test.action+"?"+params+"&checksum="+resultsha256)
+				t.Errorf("generateChecksumSHA256(%s,...) %d FAILED: Cheksum is wrong: %s", test.action, num, bbbapi_sha256.url+test.action+"?"+params+"&checksum="+resultsha256)
 			}
 		} else {
-			t.Logf("generateChecksumSHA256(%s,...) %b PASSED", test.action, num)
+			t.Logf("generateChecksumSHA256(%s,...) %d PASSED", test.action, num)
 		}
 	}
 }
