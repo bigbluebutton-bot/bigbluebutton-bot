@@ -1,14 +1,11 @@
 package api
 
 import (
-	"encoding/xml"
 	"errors"
-	"io/ioutil"
-	"net/http"
 )
 
 
-type response struct {
+type responsegetmeetings struct {
     Script      string   `xml:"script"`
     ReturnCode  string   `xml:"returncode"`
     Meetings    []meeting`xml:"meetings>meeting"`
@@ -63,29 +60,25 @@ type metadata struct {
 }
 
 // Makes a http get request to the BigBlueButton API and returns a list of meetings
-func (bbb *api_request) GetMeetings() ([]meeting, error) {
-	//Make a http get request to the BigBlueButton API
-	resp, err := http.Get(bbb.url + "getMeetings?checksum=" + bbb.generateChecksumSHA256("getMeetings", ""))
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
+func (api *api_request) GetMeetings() (map[string]meeting, error) {
 
-	//Unmarshal xml
-	var r response
-	err = xml.Unmarshal(body, &r)
+	//Make the request
+	var response responsegetmeetings
+	err := api.makeRequest(&response, GET_MEETINGS)
 	if err != nil {
-		return nil, err
+		return map[string]meeting{}, err
 	}
 
 	//Check if the request was successful
-	if r.ReturnCode != "SUCCESS" {
-		return nil, errors.New(r.Message)
+	if response.ReturnCode != "SUCCESS" {
+		return map[string]meeting{}, errors.New(response.MessageKey + ": " + response.Message)
 	}
 
-	return r.Meetings, nil
+	// Create map of meetings with InternalID as key
+	meetings := map[string]meeting{}
+	for _, meeting := range response.Meetings {
+		meetings[meeting.MeetingID] = meeting
+	}
+
+	return meetings, nil
 }
