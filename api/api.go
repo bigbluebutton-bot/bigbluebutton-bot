@@ -4,7 +4,10 @@ import (
 	"crypto/sha1"
 	"crypto/sha256"
 	"encoding/hex"
+	"encoding/xml"
 	"errors"
+	"io/ioutil"
+	"net/http"
 	"strings"
 )
 
@@ -90,6 +93,7 @@ const (
 	NAME 						paramname = "name"
 	ATTENDEE_PW 				paramname = "attendeePW"
 	MODERATOR_PW 				paramname = "moderatorPW"
+	PASSWORD 					paramname = "password"	//same as moderatorPW (I dont know why its sometimse called password and not moderatorPW)
 	FULL_NAME 					paramname = "fullName"
 	WELCOME 					paramname = "welcome"
 	VOICE_BRIDGE 				paramname = "voiceBridge"
@@ -157,4 +161,30 @@ func (api api_request) generateChecksumSHA1(action action, params string) string
 	checksum := sha1.New()
 	checksum.Write([]byte(string(action) + params + api.secret))
 	return hex.EncodeToString(checksum.Sum(nil))
+}
+
+func (api api_request) makeRequest(response any, action action, params ...params) (error) {
+	param := buildParams(params...)
+	checksum := api.generateChecksum(action, param)
+
+	url := api.url + string(action) + string("?") + param + string("&checksum=") + checksum
+
+	//Make a http get request to the BigBlueButton API
+	resp, err := http.Get(url)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+
+	//Unmarshal xml
+	err = xml.Unmarshal(body, &response)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
