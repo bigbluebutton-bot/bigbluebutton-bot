@@ -173,3 +173,70 @@ func TestGenerateChecksum(t *testing.T) {
 		}
 	}
 }
+
+
+type testmakeRequest struct {
+	url			 string
+	secret		 string
+	action       action
+	params       []params
+	expected   	 any
+	shouldfail   bool
+}
+// Test for makeRequest
+func TestMakeRequest(t *testing.T) {
+	tests := []testmakeRequest{
+		{ //0
+			url: "https://examfgfgfgfffple.com/bigbluebutton/api/",
+			secret: "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+			action: GET_MEETINGS,
+			params: []params{},
+			expected: "",
+			shouldfail: true,
+		},
+		{ //1
+			url: "https://test-install.blindsidenetworks.com/bigbluebutton/api/",
+			secret: "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+			action: GET_MEETINGS,
+			params: []params{},
+			expected: "",
+			shouldfail: true,
+		},
+		{ //2
+			url: "https://test-install.blindsidenetworks.com/bigbluebutton/api/",
+			secret: "8cd8ef52e8e101574e400365b55e11a6",
+			action: GET_MEETINGS,
+			params: []params{},
+			expected: "",
+			shouldfail: false,
+		},
+		{ //3
+			url: "https://test-install.blindsidenetworks.com/wrong/api/",
+			secret: "8cd8ef52e8e101574e400365b55e11a6",
+			action: GET_MEETINGS,
+			params: []params{},
+			expected: "",
+			shouldfail: true,
+		},
+	}
+
+	
+
+	for num, test := range tests {
+		bbbapi, err := NewRequest(test.url, test.secret, SHA1)
+		if(err != nil) {
+			t.Errorf("makeRequest(...,%s,...) %d FAILED: NewRequest: %s", test.action, num, err)
+			continue
+		}
+
+		var response responsegetmeetings
+		err = bbbapi.makeRequest(response, test.action, test.params...)
+		if(err != nil) {
+			if(!test.shouldfail) {
+				t.Errorf("makeRequest(...,%s,...) %d FAILED: err: %s", test.action, num, err)
+				continue
+			}
+		}
+		t.Logf("makeRequest(...,%s,...) %d PASSED", test.action, num)
+	}
+}

@@ -167,7 +167,12 @@ func (api api_request) makeRequest(response any, action action, params ...params
 	param := buildParams(params...)
 	checksum := api.generateChecksum(action, param)
 
-	url := api.url + string(action) + string("?") + param + string("&checksum=") + checksum
+	var url string
+	if(len([]rune(param)) > 0) {
+		url = api.url + string(action) + string("?") + param + string("&checksum=") + checksum
+	} else {
+		url = api.url + string(action) + string("?checksum=") + checksum
+	}
 
 	//Make a http get request to the BigBlueButton API
 	resp, err := http.Get(url)
