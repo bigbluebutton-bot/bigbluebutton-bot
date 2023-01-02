@@ -82,13 +82,10 @@ func buildParams(params ...params) string {
 // Generate the checksum for a api request.
 // The checksum is generated with the sha1 or sha256 algorithm.
 func (api api_request) generateChecksum(action string, params string) string {
-	switch api.shatype {
-	case SHA1:
+	if(api.shatype == SHA1) {
 		return api.generateChecksumSHA1(action, params)
-	case SHA256:
+	} else {
 		return api.generateChecksumSHA256(action, params)
-	default:
-		return ""
 	}
 }
 
