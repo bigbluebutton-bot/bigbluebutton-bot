@@ -51,10 +51,6 @@ func NewRequest(url string, secret string, shatype sha) (api_request, error) {
 		url = url + string("api/")
 	}
 
-	if len(secret) != 40 {
-		return api_request{}, errors.New("secret must be 40 characters")
-	}
-
 	return api_request{
 		url:     url,
 		secret:  secret,
