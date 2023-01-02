@@ -92,7 +92,7 @@ func TestNewRequest(t *testing.T) {
 }
 
 type testgeneratechecksum struct {
-	action          string
+	action          action
 	params          []params
 	expected_sha1   string
 	expected_sha256 string
@@ -104,42 +104,42 @@ type testgeneratechecksum struct {
 func TestGenerateChecksum(t *testing.T) {
 	tests := []testgeneratechecksum{
 		{ //0
-			action: "create",
+			action: CREATE,
 			params: []params{
 				{
-					name:  "allowStartStopRecording",
+					name:  ALLOW_START_STOP_RECORDING,
 					value: "true",
 				},
 				{
-					name:  "attendeePW",
+					name:  ATTENDEE_PW,
 					value: "ap",
 				},
 				{
-					name:  "autoStartRecording",
+					name:  AUTO_START_RECORDING,
 					value: "false",
 				},
 				{
-					name:  "meetingID",
+					name:  MEETING_ID,
 					value: "random-4026116",
 				},
 				{
-					name:  "moderatorPW",
+					name:  MODERATOR_PW,
 					value: "mp",
 				},
 				{
-					name:  "name",
+					name:  NAME,
 					value: "random-4026116",
 				},
 				{
-					name:  "record",
+					name:  RECORD,
 					value: "false",
 				},
 				{
-					name:  "voiceBridge",
+					name:  VOICE_BRIDGE,
 					value: "70848",
 				},
 				{
-					name:  "welcome",
+					name:  WELCOME,
 					value: "Hello you there",
 				},
 			},
@@ -161,7 +161,7 @@ func TestGenerateChecksum(t *testing.T) {
 			if test.shouldfail {
 				t.Logf("generateChecksumSHA1(%s,...) %d PASSED", test.action, num)
 			} else {
-				t.Errorf("generateChecksumSHA1(%s,...) %d FAILED: Cheksum is wrong: %s", test.action, num, bbbapi_sha1.url+test.action+"?"+params+"&checksum="+resultsha1)
+				t.Errorf("generateChecksumSHA1(%s,...) %d FAILED: Cheksum is wrong: %s", test.action, num, bbbapi_sha1.url+string(test.action)+"?"+params+"&checksum="+resultsha1)
 			}
 		} else {
 			t.Logf("generateChecksumSHA1(%s,...) %d PASSED", test.action, num)
@@ -173,7 +173,7 @@ func TestGenerateChecksum(t *testing.T) {
 			if test.shouldfail {
 				t.Logf("generateChecksumSHA256(%s,...) %d PASSED", test.action, num)
 			} else {
-				t.Errorf("generateChecksumSHA256(%s,...) %d FAILED: Cheksum is wrong: %s", test.action, num, bbbapi_sha256.url+test.action+"?"+params+"&checksum="+resultsha256)
+				t.Errorf("generateChecksumSHA256(%s,...) %d FAILED: Cheksum is wrong: %s", test.action, num, bbbapi_sha256.url+string(test.action)+"?"+params+"&checksum="+resultsha256)
 			}
 		} else {
 			t.Logf("generateChecksumSHA256(%s,...) %d PASSED", test.action, num)
