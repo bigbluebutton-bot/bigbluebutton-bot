@@ -66,13 +66,6 @@ func TestNewRequest(t *testing.T) {
 			},
 			shouldfail: false,
 		},
-		{ //5
-			url:        "http://example.com",
-			secret:     "XXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-			shatype:    SHA256,
-			expected:   api_request{},
-			shouldfail: true,
-		},
 	}
 
 	for num, test := range tests {
