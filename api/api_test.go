@@ -3,7 +3,7 @@ package api
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"os"
 	"reflect"
 	"strings"
@@ -41,7 +41,7 @@ func readConfig(file string, t *testing.T) config {
 	// defer the closing of our jsonFile so that we can parse it later on
 	defer jsonFile.Close()
 	// read our opened jsonFile as a byte array.
-	byteValue, _ := ioutil.ReadAll(jsonFile)
+	byteValue, _ := io.ReadAll(jsonFile)
 
 	// we unmarshal our byteArray which contains our jsonFile's content into conf
 	json.Unmarshal([]byte(byteValue), &conf)

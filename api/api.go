@@ -6,7 +6,7 @@ import (
 	"encoding/hex"
 	"encoding/xml"
 	"errors"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"strings"
 )
@@ -191,7 +191,7 @@ func (api api_request) makeRequest(response any, action action, params ...params
 		return err
 	}
 	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return err
 	}
