@@ -14,10 +14,6 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    env: # an environment variable
-      BBB_URL: ${{ secrets.BBB_SERVER_URL }}
-      BBB_SECRET: ${{ secrets.BBB_SERVER_SECRET }}
-
     - uses: actions/checkout@v3
 
     - name: Set up Go
@@ -29,4 +25,7 @@ jobs:
 #      run: go build -v ./...
 
     - name: Test
+      env: # an environment variable
+        BBB_URL: ${{ secrets.BBB_SERVER_URL }}
+        BBB_SECRET: ${{ secrets.BBB_SERVER_SECRET }}
       run: go test -v ./...
