@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"os"
 	"reflect"
+	"strings"
 	"testing"
 )
 
@@ -232,6 +233,8 @@ type testmakeRequest struct {
 }
 // Test for makeRequest
 func TestMakeRequest(t *testing.T) {
+	conf := readConfig("../config.json", t);
+
 	tests := []testmakeRequest{
 		{ //0
 			url: "https://examfgfgfgfffple.com/bigbluebutton/api/",
@@ -242,7 +245,7 @@ func TestMakeRequest(t *testing.T) {
 			shouldfail: true,
 		},
 		{ //1
-			url: "https://test-install.blindsidenetworks.com/bigbluebutton/api/",
+			url: conf.Url,
 			secret: "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
 			action: GET_MEETINGS,
 			params: []params{},
@@ -250,16 +253,16 @@ func TestMakeRequest(t *testing.T) {
 			shouldfail: true,
 		},
 		{ //2
-			url: "https://test-install.blindsidenetworks.com/bigbluebutton/api/",
-			secret: "8cd8ef52e8e101574e400365b55e11a6",
+			url: conf.Url,
+			secret: conf.Secret,
 			action: GET_MEETINGS,
 			params: []params{},
 			expected: "",
 			shouldfail: false,
 		},
 		{ //3
-			url: "https://test-install.blindsidenetworks.com/wrong/api/",
-			secret: "8cd8ef52e8e101574e400365b55e11a6",
+			url: strings.Replace(conf.Url, "bigbluebutton", "wrong", -1),
+			secret: conf.Secret,
 			action: GET_MEETINGS,
 			params: []params{},
 			expected: "",
