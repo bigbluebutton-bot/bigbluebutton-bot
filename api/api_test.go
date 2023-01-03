@@ -277,7 +277,7 @@ func TestMakeRequest(t *testing.T) {
 		}
 
 		var response responsegetmeetings
-		err = bbbapi.makeRequest(response, test.action, test.params...)
+		err = bbbapi.makeRequest(&response, test.action, test.params...)
 		if(err != nil) {
 			if(!test.shouldfail) {
 				t.Errorf("makeRequest(...,%s,...) %d FAILED: err: %s", test.action, num, err)
