@@ -8,6 +8,7 @@ import (
 type responsegetmeetings struct {
     Script      string   `xml:"script"`
     ReturnCode  string   `xml:"returncode"`
+	Errors   	[]responseerror `xml:"errors>error"`
     Meetings    []meeting`xml:"meetings>meeting"`
     MessageKey  string   `xml:"messageKey"`
     Message     string   `xml:"message"`
@@ -71,7 +72,15 @@ func (api *api_request) GetMeetings() (map[string]meeting, error) {
 
 	//Check if the request was successful
 	if response.ReturnCode != "SUCCESS" {
-		return map[string]meeting{}, errors.New(response.MessageKey + ": " + response.Message)
+		if(response.MessageKey != "" && response.Message != "") {
+			return map[string]meeting{}, errors.New(response.MessageKey + ": " + response.Message)
+		}
+		if(response.Errors != nil) {
+			if(response.Errors[0].Key != "" && response.Errors[0].Message != "") {
+				return map[string]meeting{}, errors.New(response.Errors[0].Key + ": " + response.Errors[0].Message)
+			}
+		}
+		return map[string]meeting{}, errors.New("API response was not successful")
 	}
 
 	// Create map of meetings with InternalID as key

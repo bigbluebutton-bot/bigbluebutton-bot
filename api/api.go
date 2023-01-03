@@ -159,6 +159,21 @@ func (api api_request) generateChecksumSHA1(action action, params string) string
 	return hex.EncodeToString(checksum.Sum(nil))
 }
 
+// The response from the BigBlueButton API
+// EXAMPLES:
+// type response struct {
+//     Script      string   `xml:"script"`
+//     ReturnCode  string   `xml:"returncode"`
+// 	   Errors   	[]responseerror `xml:"errors>error"`
+//     MessageKey  string   `xml:"messageKey"`
+//     Message     string   `xml:"message"`
+// }
+
+type responseerror struct {
+	Key     string `xml:"key"`
+	Message string `xml:"message"`
+}
+
 func (api api_request) makeRequest(response any, action action, params ...params) (error) {
 	param := buildParams(params...)
 	checksum := api.generateChecksum(action, param)

@@ -9,6 +9,7 @@ import (
 type responseCreateMeeting struct {
 	Script          string `xml:"script"`
 	ReturnCode      string `xml:"returncode"`
+	Errors   		[]responseerror `xml:"errors>error"`
 	MeetingID       string `xml:"meetingID"`
 	InternalMeeting string `xml:"internalMeetingID"`
 	ParentMeeting   string `xml:"parentMeetingID"`
@@ -77,7 +78,15 @@ func (api *api_request) CreateMeeting(name string, meetingID string, attendeePW 
 
 	//Check if the request was successful
 	if response.ReturnCode != "SUCCESS" {
-		return meeting{}, errors.New(response.MessageKey + ": " + response.Message)
+		if(response.MessageKey != "" && response.Message != "") {
+			return meeting{}, errors.New(response.MessageKey + ": " + response.Message)
+		}
+		if(response.Errors != nil) {
+			if(response.Errors[0].Key != "" && response.Errors[0].Message != "") {
+				return meeting{}, errors.New(response.Errors[0].Key + ": " + response.Errors[0].Message)
+			}
+		}
+		return meeting{}, errors.New("API response was not successful")
 	}
 
 	//Get the meeting info
