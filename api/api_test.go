@@ -1,10 +1,57 @@
 package api
 
 import (
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"os"
 	"reflect"
 	"testing"
 )
+
+
+type config struct {
+	Url    string `json:"url"`
+	Secret string `json:"secret"`
+}
+// For reading config from a file or from environment variables
+func readConfig(file string, t *testing.T) config {
+
+	// we initialize config
+	var conf config
+
+	// Try to read from env
+	conf.Url = os.Getenv("BBB_URL")
+	conf.Secret = os.Getenv("BBB_SECRET")
+
+	if(conf.Url != "" && conf.Secret != "") {
+		t.Log("Using env variables for config")
+		return conf
+	}
+
+	// Try to read from config file
+	t.Log("Using config file for config")
+	// Open our jsonFile
+	jsonFile, err := os.Open(file)
+	// if we os.Open returns an error then handle it
+	if err != nil {
+		panic(err)
+	}
+	// defer the closing of our jsonFile so that we can parse it later on
+	defer jsonFile.Close()
+	// read our opened jsonFile as a byte array.
+	byteValue, _ := ioutil.ReadAll(jsonFile)
+
+	// we unmarshal our byteArray which contains our jsonFile's content into conf
+	json.Unmarshal([]byte(byteValue), &conf)
+
+	return conf
+}
+
+
+
+
+
 
 type testnewrequest struct {
 	url        string
