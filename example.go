@@ -48,16 +48,20 @@ func main() {
 	}
 	fmt.Printf("New meeting \"%s\" was created.\n", newmeeting.MeetingName)
 
+	fmt.Println("All meetings:")
 	meetings, err := bbbapi.GetMeetings()
 	if err != nil {
 		panic(err)
 	}
-
-	fmt.Println("All meetings:")
 	for _, meeting := range meetings {
 		fmt.Print(meeting.MeetingName + ": ")
 		fmt.Println(bbbapi.IsMeetingRunning(meeting.MeetingID))
 	}
+
+	fmt.Println(bbbapi.Join(newmeeting.MeetingID, true))
+
+
+
 
 	endedmeeting, err := bbbapi.EndMeeting(newmeeting.MeetingID)
 	if err != nil {
