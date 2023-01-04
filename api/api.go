@@ -8,6 +8,7 @@ import (
 	"errors"
 	"io"
 	"net/http"
+	"net/url"
 	"strings"
 )
 
@@ -121,8 +122,10 @@ type params struct {
 func buildParams(params ...params) string {
 	var param string
 	for count, p := range params {
-		name := strings.ReplaceAll(string(p.name), " ", "+")
-		value := strings.ReplaceAll(p.value, " ", "+")
+
+		//Replace special chars
+		name := url.QueryEscape(string(p.name))
+		value := url.QueryEscape(p.value)
 
 		if count == 0 {
 			param = name + string("=") + value
@@ -130,6 +133,10 @@ func buildParams(params ...params) string {
 		}
 		param = param + string("&") + name + string("=") + value
 	}
+
+	//Replace some chars with origanal char
+	param = strings.ReplaceAll(param, url.QueryEscape(" "), "+")
+
 	return param
 }
 

@@ -188,6 +188,52 @@ func TestGenerateChecksum(t *testing.T) {
 			expected_sha256: "ae982d76751077e4e1eae8a667d5f74fe4f9c9a9df7d30ff2e56b3a025f1828d",
 			shouldfail:      false,
 		},
+		{ //1
+			action: CREATE,
+			params: []params{
+				{
+					name:  ALLOW_START_STOP_RECORDING,
+					value: "true",
+				},
+				{
+					name:  ATTENDEE_PW,
+					value: "ap",
+				},
+				{
+					name:  AUTO_START_RECORDING,
+					value: "false",
+				},
+				{
+					name:  MEETING_ID,
+					value: "random-3098916",
+				},
+				{
+					name:  MODERATOR_PW,
+					value: "mp",
+				},
+				{
+					name:  NAME,
+					value: "Hallöchen",
+				},
+				{
+					name:  RECORD,
+					value: "false",
+				},
+				{
+					name:  VOICE_BRIDGE,
+					value: "75469",
+				},
+				{
+					name:  WELCOME,
+					value: `<br>Welcome to <b>%%CONFNAME%%</b>!
+					This is a test & it shouldn't "work" ;-<)
+					!"§$%&/()=?*'_:;>{[]}\/()=+#-.,<|`,
+				},
+			},
+			expected_sha1:   "58ac486010b9e5b90ef43900a479a3acffeda337",
+			expected_sha256: "fb1ae91324df1d4a523174d752e37a4880d06541cbab93345df6ff2056a4d377",
+			shouldfail:      false,
+		},
 	}
 
 	bbbapi_sha1, _ := NewRequest("https://example.com/bigbluebutton/api/", "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX", SHA1)
