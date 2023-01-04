@@ -65,21 +65,23 @@ func NewRequest(url string, secret string, shatype sha) (api_request, error) {
 type action string
 const (
 	CREATE 						action = "create"
-	JOIN   						action = "join"
-	IS_MEETING_RUNNING 			action = "isMeetingRunning"
-	GET_MEETING_INFO 			action = "getMeetingInfo"
-	MEETING 					action = "meeting"
+	END 						action = "end"
 	GET_MEETINGS 				action = "getMeetings"
-	GET_DEFAULT_CONFIG_XML 		action = "getDefaultConfigXML"
-	SET_CONFIG_XML 				action = "setConfigXML"
-	ENTER 						action = "enter"
-	CONFIG_XML 					action = "configXML"
-	SIGN_OUT 					action = "signOut"
-	GET_RECORDINGS 				action = "getRecordings"
-	PUBLISH_RECORDINGS 			action = "publishRecordings"
-	DELETE_RECORDINGS 			action = "deleteRecordings"
-	UPDATE_RECORDINGS 			action = "updateRecordings"
-	GET_RECORDING_TEXT_TRACKS 	action = "getRecordingTextTracks"
+	IS_MEETING_RUNNING 			action = "isMeetingRunning"
+	JOIN   						action = "join"
+
+	// GET_RECORDINGS 				action = "getRecordings"
+	// PUBLISH_RECORDINGS 			action = "publishRecordings"
+	// DELETE_RECORDINGS 			action = "deleteRecordings"
+	// UPDATE_RECORDINGS 			action = "updateRecordings"
+	// GET_RECORDING_TEXT_TRACKS 	action = "getRecordingTextTracks"
+
+	// GET_MEETING_INFO 			action = "getMeetingInfo"
+	// GET_DEFAULT_CONFIG_XML 		action = "getDefaultConfigXML"
+	// SET_CONFIG_XML 				action = "setConfigXML"
+	// ENTER 						action = "enter"
+	// CONFIG_XML 					action = "configXML"
+	// SIGN_OUT 					action = "signOut"
 )
 
 // Only those parames are allowed
