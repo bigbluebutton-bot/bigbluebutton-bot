@@ -9,6 +9,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"reflect"
 	"strings"
 )
 
@@ -59,16 +60,15 @@ func NewRequest(url string, secret string, shatype sha) (api_request, error) {
 	}, nil
 }
 
-
-
 // Only those actions are allowed
 type action string
+
 const (
-	CREATE 						action = "create"
-	END 						action = "end"
-	GET_MEETINGS 				action = "getMeetings"
-	IS_MEETING_RUNNING 			action = "isMeetingRunning"
-	JOIN   						action = "join"
+	CREATE             action = "create"
+	END                action = "end"
+	GET_MEETINGS       action = "getMeetings"
+	IS_MEETING_RUNNING action = "isMeetingRunning"
+	JOIN               action = "join"
 
 	// GET_RECORDINGS 				action = "getRecordings"
 	// PUBLISH_RECORDINGS 			action = "publishRecordings"
@@ -86,42 +86,42 @@ const (
 
 // Only those parames are allowed
 type paramname string
-const (
-	MEETING_ID 					paramname = "meetingID"
-	RECORD_ID 					paramname = "recordID"
-	NAME 						paramname = "name"
-	ATTENDEE_PW 				paramname = "attendeePW"
-	MODERATOR_PW 				paramname = "moderatorPW"
-	PASSWORD 					paramname = "password"	//same as moderatorPW (I dont know why its sometimse called password and not moderatorPW)
-	FULL_NAME 					paramname = "fullName"
-	WELCOME 					paramname = "welcome"
-	VOICE_BRIDGE 				paramname = "voiceBridge"
-	RECORD 						paramname = "record"
-	AUTO_START_RECORDING 		paramname = "autoStartRecording"
-	ALLOW_START_STOP_RECORDING 	paramname = "allowStartStopRecording"
-	DIAL_NUMBER 				paramname = "dialNumber"
-	WEB_VOICE 					paramname = "webVoice"
-	LOGOUT_URL 					paramname = "logoutURL"
-	MAX_PARTICIPANTS 			paramname = "maxParticipants"
-	DURATION 					paramname = "duration"
-	USER_ID 					paramname = "userID"
-	CREATE_TIME 				paramname = "createTime"
-	WEB_VOICE_CONF 				paramname = "webVoiceConf"
-	PUBLISH 					paramname = "publish"
-	REDIRECT 					paramname = "redirect"
-	CLIENT_URL 					paramname = "clientURL"
-	CONFIG_TOKEN 				paramname = "configToken"
-	AVATAR_URL 					paramname = "avatarURL"
-	MODERATOR_ONLY_MESSAGE 		paramname = "moderatorOnlyMessage"
-)
 
+const (
+	MEETING_ID                 paramname = "meetingID"
+	RECORD_ID                  paramname = "recordID"
+	NAME                       paramname = "name"
+	ATTENDEE_PW                paramname = "attendeePW"
+	MODERATOR_PW               paramname = "moderatorPW"
+	PASSWORD                   paramname = "password" //same as moderatorPW (I dont know why its sometimse called password and not moderatorPW)
+	FULL_NAME                  paramname = "fullName"
+	WELCOME                    paramname = "welcome"
+	VOICE_BRIDGE               paramname = "voiceBridge"
+	RECORD                     paramname = "record"
+	AUTO_START_RECORDING       paramname = "autoStartRecording"
+	ALLOW_START_STOP_RECORDING paramname = "allowStartStopRecording"
+	DIAL_NUMBER                paramname = "dialNumber"
+	WEB_VOICE                  paramname = "webVoice"
+	LOGOUT_URL                 paramname = "logoutURL"
+	MAX_PARTICIPANTS           paramname = "maxParticipants"
+	DURATION                   paramname = "duration"
+	USER_ID                    paramname = "userID"
+	CREATE_TIME                paramname = "createTime"
+	WEB_VOICE_CONF             paramname = "webVoiceConf"
+	PUBLISH                    paramname = "publish"
+	REDIRECT                   paramname = "redirect"
+	CLIENT_URL                 paramname = "clientURL"
+	CONFIG_TOKEN               paramname = "configToken"
+	AVATAR_URL                 paramname = "avatarURL"
+	MODERATOR_ONLY_MESSAGE     paramname = "moderatorOnlyMessage"
+)
 
 type params struct {
 	name  paramname
 	value string
 }
 
-func buildParams(params ...params) string {
+func (api api_request) buildParams(params ...params) string {
 	var param string
 	for count, p := range params {
 
@@ -145,7 +145,7 @@ func buildParams(params ...params) string {
 // Generate the checksum for a api request.
 // The checksum is generated with the sha1 or sha256 algorithm.
 func (api api_request) generateChecksum(action action, params string) string {
-	if(api.shatype == SHA1) {
+	if api.shatype == SHA1 {
 		return api.generateChecksumSHA1(action, params)
 	} else {
 		return api.generateChecksumSHA256(action, params)
@@ -183,32 +183,65 @@ type responseerror struct {
 	Message string `xml:"message"`
 }
 
-func (api api_request) makeRequest(response any, action action, params ...params) (error) {
-	param := buildParams(params...)
+func (api api_request) buildURL(action action, params ...params) string {
+	param := api.buildParams(params...)
 	checksum := api.generateChecksum(action, param)
 
 	var url string
-	if(len([]rune(param)) > 0) {
+	if len([]rune(param)) > 0 {
 		url = api.url + string(action) + string("?") + param + string("&checksum=") + checksum
 	} else {
 		url = api.url + string(action) + string("?checksum=") + checksum
 	}
 
+	return url
+}
+
+func (api api_request) makeRequest(response any, action action, params ...params) error {
+
+	url := api.buildURL(action, params...)
+
 	//Make a http get request to the BigBlueButton API
-	resp, err := http.Get(url)
+	client := new(http.Client)
+	req, _ := http.NewRequest("GET", url, nil)
+	resp, err := client.Do(req) //send request
 	if err != nil {
 		return err
 	}
+	cookies := resp.Cookies() //get cookies
+
 	defer resp.Body.Close()
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return err
 	}
 
+
 	//Unmarshal xml
 	err = xml.Unmarshal(body, &response)
 	if err != nil {
 		return err
+	}
+
+	// Set Cookie to response.Cookie
+	ps := reflect.ValueOf(response)
+	// struct
+	s := ps.Elem()
+	if s.Kind() == reflect.Struct {
+		// exported field
+		f := s.FieldByName("Cookie")
+		if f.IsValid() {
+			// A Value can be changed only if it is
+			// addressable and was not obtained by
+			// the use of unexported struct fields.
+			if f.CanSet() {
+				// change value of Cookie
+				if f.Kind() == reflect.Struct {
+					//Set Cookie
+					f.Set(reflect.ValueOf(cookies))
+				}
+			}
+		}
 	}
 
 	return nil

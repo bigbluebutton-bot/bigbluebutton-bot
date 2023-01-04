@@ -240,7 +240,7 @@ func TestGenerateChecksum(t *testing.T) {
 	bbbapi_sha256, _ := NewRequest("https://example.com/bigbluebutton/api/", "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX", SHA256)
 
 	for num, test := range tests {
-		params := buildParams(test.params...)
+		params := bbbapi_sha1.buildParams(test.params...)
 
 		//Sha1
 		resultsha1 := bbbapi_sha1.generateChecksum(test.action, params)
