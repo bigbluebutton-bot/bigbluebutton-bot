@@ -55,7 +55,8 @@ func main() {
 
 	fmt.Println("All meetings:")
 	for _, meeting := range meetings {
-		fmt.Println(meeting.MeetingName)
+		fmt.Print(meeting.MeetingName + ": ")
+		fmt.Println(bbbapi.IsMeetingRunning(meeting.MeetingID))
 	}
 
 	endedmeeting, err := bbbapi.EndMeeting(newmeeting.MeetingID)
