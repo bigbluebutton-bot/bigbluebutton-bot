@@ -27,7 +27,7 @@ type responseCreateMeeting struct {
 }
 
 
-// Makes a http get request to the BigBlueButton API and returns a list of meetings
+// Makes a http get request to the BigBlueButton API, creates a meeting and returns this new meeting
 func (api *api_request) CreateMeeting(name string, meetingID string, attendeePW string, moderatorPW string, welcome string, allowStartStopRecording bool, autoStartRecording bool, record bool, voiceBridge int64) (meeting, error) {
 
 	params := []params{
