@@ -21,7 +21,7 @@ func (api *api_request) IsMeetingRunning(meetingID string) bool {
 	}
 
 	var response responseIsMeetingRunning
-	err := api.makeRequest(response, IS_MEETING_RUNNING, params...)
+	err := api.makeRequest(&response, IS_MEETING_RUNNING, params...)
 	if(err != nil){
 		return false
 	}

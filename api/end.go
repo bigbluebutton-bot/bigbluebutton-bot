@@ -29,7 +29,7 @@ func (api *api_request) EndMeeting(meetingID string) (meeting, error) {
 	}
 
 	var response responseEndMeeting
-	err = api.makeRequest(response, END, params...)
+	err = api.makeRequest(&response, END, params...)
 	if(err != nil){
 		return meeting{}, err
 	}
