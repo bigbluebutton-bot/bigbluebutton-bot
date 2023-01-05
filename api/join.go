@@ -26,7 +26,7 @@ type responseJoin struct {
 // - userid
 // - auth_token
 // - session_token
-func (api api_request) Join(meetingID string, moderator bool) (string, []*http.Cookie, string, string, string, error) {
+func (api api_request) Join(meetingID string, userName string, moderator bool) (string, []*http.Cookie, string, string, string, error) {
 
 	meetings, err := api.GetMeetings()
 	if(err != nil){
@@ -43,6 +43,10 @@ func (api api_request) Join(meetingID string, moderator bool) (string, []*http.C
 	}
 
 	params := []params{
+		{
+			name:  FULL_NAME,
+			value: userName,
+		},
 		{
 			name:  MEETING_ID,
 			value: meetingID,
@@ -68,7 +72,7 @@ func (api api_request) Join(meetingID string, moderator bool) (string, []*http.C
 
 // Makes a http get request to the BigBlueButton API to join a meeting and returs:
 // - url
-func (api api_request) JoinGetURL(meetingID string, moderator bool) (string, error) {
+func (api api_request) JoinGetURL(meetingID string, userName string, moderator bool) (string, error) {
 
 	meetings, err := api.GetMeetings()
 	if(err != nil){
@@ -85,6 +89,10 @@ func (api api_request) JoinGetURL(meetingID string, moderator bool) (string, err
 	}
 
 	params := []params{
+		{
+			name:  FULL_NAME,
+			value: userName,
+		},
 		{
 			name:  MEETING_ID,
 			value: meetingID,

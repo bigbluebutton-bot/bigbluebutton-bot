@@ -208,6 +208,10 @@ func (api api_request) makeRequest(response any, action action, params ...params
 	if err != nil {
 		return err
 	}
+	if(resp.StatusCode != 200) {
+		return errors.New("Server returned: " + resp.Status)
+	}
+
 	cookies := resp.Cookies() //get cookies
 
 	defer resp.Body.Close()
@@ -236,7 +240,7 @@ func (api api_request) makeRequest(response any, action action, params ...params
 			// the use of unexported struct fields.
 			if f.CanSet() {
 				// change value of Cookie
-				if f.Kind() == reflect.Struct {
+				if f.Kind() == reflect.Slice {
 					//Set Cookie
 					f.Set(reflect.ValueOf(cookies))
 				}
