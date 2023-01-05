@@ -3,7 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"os"
 
 	"github.com/ITLab-CC/bigbluebutton-bot/api"
@@ -24,7 +24,7 @@ func readConfig(file string) config {
 	// defer the closing of our jsonFile so that we can parse it later on
 	defer jsonFile.Close()
 	// read our opened jsonFile as a byte array.
-	byteValue, _ := ioutil.ReadAll(jsonFile)
+	byteValue, _ := io.ReadAll(jsonFile)
 	// we initialize config
 	var conf config
 	// we unmarshal our byteArray which contains our jsonFile's content into conf
