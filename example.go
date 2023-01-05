@@ -48,6 +48,12 @@ func main() {
 	}
 	fmt.Printf("New meeting \"%s\" was created.\n", newmeeting.MeetingName)
 
+
+
+	fmt.Println("-----------------------------------------------")
+
+
+
 	fmt.Println("All meetings:")
 	meetings, err := bbbapi.GetMeetings()
 	if err != nil {
@@ -58,8 +64,32 @@ func main() {
 		fmt.Println(bbbapi.IsMeetingRunning(meeting.MeetingID))
 	}
 
-	fmt.Println(bbbapi.Join(newmeeting.MeetingID, true))
 
+
+	fmt.Println("-----------------------------------------------")
+
+
+
+	url, err := bbbapi.JoinGetURL(newmeeting.MeetingID, "userName", true)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println("Moderator join url: " + url)
+
+	urlattende, cookie, userid, auth_token, session_token, err:= bbbapi.Join(newmeeting.MeetingID, "userName", false)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println("Attende join vars: ")
+	fmt.Println(urlattende)
+	fmt.Println(cookie)
+	fmt.Println(userid)
+	fmt.Println(auth_token)
+	fmt.Println(session_token)
+
+
+
+	fmt.Println("-----------------------------------------------")
 
 
 
@@ -68,6 +98,12 @@ func main() {
 		panic(err)
 	}
 	fmt.Printf("Meeting \"%s\" was ended.\n", endedmeeting.MeetingName)
+
+
+
+	fmt.Println("-----------------------------------------------")
+
+
 
 	fmt.Println("All meetings:")
 	meetings, err = bbbapi.GetMeetings()
