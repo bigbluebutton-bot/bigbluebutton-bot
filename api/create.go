@@ -7,28 +7,27 @@ import (
 )
 
 type responseCreateMeeting struct {
-	Script          string `xml:"script"`
-	ReturnCode      string `xml:"returncode"`
-	Errors   		[]responseerror `xml:"errors>error"`
-	MeetingID       string `xml:"meetingID"`
-	InternalMeeting string `xml:"internalMeetingID"`
-	ParentMeeting   string `xml:"parentMeetingID"`
-	AttendeePW      string `xml:"attendeePW"`
-	ModeratorPW     string `xml:"moderatorPW"`
-	CreateTime      int64  `xml:"createTime"`
-	VoiceBridge     int64  `xml:"voiceBridge"`
-	DialNumber      string `xml:"dialNumber"`
-	CreateDate      string `xml:"createDate"`
-	HasUserJoined   bool   `xml:"hasUserJoined"`
-	Duration        int64  `xml:"duration"`
-	HasBeenEnded    bool   `xml:"hasBeenForciblyEnded"`
-	MessageKey      string `xml:"messageKey"`
-	Message         string `xml:"message"`
+	Script          string          `xml:"script"`
+	ReturnCode      string          `xml:"returncode"`
+	Errors          []responseerror `xml:"errors>error"`
+	MeetingID       string          `xml:"meetingID"`
+	InternalMeeting string          `xml:"internalMeetingID"`
+	ParentMeeting   string          `xml:"parentMeetingID"`
+	AttendeePW      string          `xml:"attendeePW"`
+	ModeratorPW     string          `xml:"moderatorPW"`
+	CreateTime      int64           `xml:"createTime"`
+	VoiceBridge     int64           `xml:"voiceBridge"`
+	DialNumber      string          `xml:"dialNumber"`
+	CreateDate      string          `xml:"createDate"`
+	HasUserJoined   bool            `xml:"hasUserJoined"`
+	Duration        int64           `xml:"duration"`
+	HasBeenEnded    bool            `xml:"hasBeenForciblyEnded"`
+	MessageKey      string          `xml:"messageKey"`
+	Message         string          `xml:"message"`
 }
 
-
 // Makes a http get request to the BigBlueButton API, creates a meeting and returns this new meeting
-func (api *api_request) CreateMeeting(name string, meetingID string, attendeePW string, moderatorPW string, welcome string, allowStartStopRecording bool, autoStartRecording bool, record bool, voiceBridge int64) (meeting, error) {
+func (api *ApiRequest) CreateMeeting(name string, meetingID string, attendeePW string, moderatorPW string, welcome string, allowStartStopRecording bool, autoStartRecording bool, record bool, voiceBridge int64) (meeting, error) {
 
 	params := []params{
 		{
@@ -78,11 +77,11 @@ func (api *api_request) CreateMeeting(name string, meetingID string, attendeePW 
 
 	//Check if the request was successful
 	if response.ReturnCode != "SUCCESS" {
-		if(response.MessageKey != "" && response.Message != "") {
+		if response.MessageKey != "" && response.Message != "" {
 			return meeting{}, errors.New(response.MessageKey + ": " + response.Message)
 		}
-		if(response.Errors != nil) {
-			if(response.Errors[0].Key != "" && response.Errors[0].Message != "") {
+		if response.Errors != nil {
+			if response.Errors[0].Key != "" && response.Errors[0].Message != "" {
 				return meeting{}, errors.New(response.Errors[0].Key + ": " + response.Errors[0].Message)
 			}
 		}
@@ -91,7 +90,7 @@ func (api *api_request) CreateMeeting(name string, meetingID string, attendeePW 
 
 	//Get the meeting info
 	meetings, err := api.GetMeetings()
-	if(err != nil) {
+	if err != nil {
 		return meeting{}, err
 	}
 

@@ -10,11 +10,11 @@ import (
 	"testing"
 )
 
-
 type config struct {
 	Url    string `json:"url"`
 	Secret string `json:"secret"`
 }
+
 // For reading config from a file or from environment variables
 func readConfig(file string, t *testing.T) config {
 
@@ -25,7 +25,7 @@ func readConfig(file string, t *testing.T) config {
 	conf.Url = os.Getenv("BBB_URL")
 	conf.Secret = os.Getenv("BBB_SECRET")
 
-	if(conf.Url != "" && conf.Secret != "") {
+	if conf.Url != "" && conf.Secret != "" {
 		t.Log("Using env variables for config")
 		return conf
 	}
@@ -49,16 +49,11 @@ func readConfig(file string, t *testing.T) config {
 	return conf
 }
 
-
-
-
-
-
 type testnewrequest struct {
 	url        string
 	secret     string
 	shatype    sha
-	expected   api_request
+	expected   ApiRequest
 	shouldfail bool
 }
 
@@ -68,7 +63,7 @@ func TestNewRequest(t *testing.T) {
 			url:     "https://example.com",
 			secret:  "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
 			shatype: SHA256,
-			expected: api_request{
+			expected: ApiRequest{
 				url:     "https://example.com/api/",
 				secret:  "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
 				shatype: SHA256,
@@ -79,7 +74,7 @@ func TestNewRequest(t *testing.T) {
 			url:     "https://example.com/",
 			secret:  "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
 			shatype: SHA1,
-			expected: api_request{
+			expected: ApiRequest{
 				url:     "https://example.com/api/",
 				secret:  "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
 				shatype: SHA1,
@@ -90,7 +85,7 @@ func TestNewRequest(t *testing.T) {
 			url:     "http://example.com/",
 			secret:  "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
 			shatype: SHA256,
-			expected: api_request{
+			expected: ApiRequest{
 				url:     "http://example.com/api/",
 				secret:  "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
 				shatype: SHA256,
@@ -100,14 +95,14 @@ func TestNewRequest(t *testing.T) {
 		{ //3
 			url:        "example.com",
 			secret:     "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-			expected:   api_request{},
+			expected:   ApiRequest{},
 			shouldfail: true,
 		},
 		{ //4
 			url:     "https://example.com",
 			secret:  "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
 			shatype: 2,
-			expected: api_request{
+			expected: ApiRequest{
 				url:     "https://example.com/api/",
 				secret:  "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
 				shatype: SHA256,
@@ -224,7 +219,7 @@ func TestGenerateChecksum(t *testing.T) {
 					value: "75469",
 				},
 				{
-					name:  WELCOME,
+					name: WELCOME,
 					value: `<br>Welcome to <b>%%CONFNAME%%</b>!
 					This is a test & it shouldn't "work" ;-<)
 					!"§$%&/()=?*'_:;>{[]}\/()=+#-.,<|`,
@@ -268,67 +263,65 @@ func TestGenerateChecksum(t *testing.T) {
 	}
 }
 
-
 type testmakeRequest struct {
-	url			 string
-	secret		 string
-	action       action
-	params       []params
-	expected   	 any
-	shouldfail   bool
+	url        string
+	secret     string
+	action     action
+	params     []params
+	expected   any
+	shouldfail bool
 }
+
 // Test for makeRequest
 func TestMakeRequest(t *testing.T) {
-	conf := readConfig("../config.json", t);
+	conf := readConfig("../config.json", t)
 
 	tests := []testmakeRequest{
 		{ //0
-			url: "https://examfgfgfgfffple.com/bigbluebutton/api/",
-			secret: "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-			action: GET_MEETINGS,
-			params: []params{},
-			expected: "",
+			url:        "https://examfgfgfgfffple.com/bigbluebutton/api/",
+			secret:     "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+			action:     GET_MEETINGS,
+			params:     []params{},
+			expected:   "",
 			shouldfail: true,
 		},
 		{ //1
-			url: conf.Url,
-			secret: "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-			action: GET_MEETINGS,
-			params: []params{},
-			expected: "",
+			url:        conf.Url,
+			secret:     "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+			action:     GET_MEETINGS,
+			params:     []params{},
+			expected:   "",
 			shouldfail: true,
 		},
 		{ //2
-			url: conf.Url,
-			secret: conf.Secret,
-			action: GET_MEETINGS,
-			params: []params{},
-			expected: "",
+			url:        conf.Url,
+			secret:     conf.Secret,
+			action:     GET_MEETINGS,
+			params:     []params{},
+			expected:   "",
 			shouldfail: false,
 		},
 		{ //3
-			url: strings.Replace(conf.Url, "bigbluebutton", "wrong", -1),
-			secret: conf.Secret,
-			action: GET_MEETINGS,
-			params: []params{},
-			expected: "",
+			url:        strings.Replace(conf.Url, "bigbluebutton", "wrong", -1),
+			secret:     conf.Secret,
+			action:     GET_MEETINGS,
+			params:     []params{},
+			expected:   "",
 			shouldfail: true,
 		},
 	}
 
-	
-
 	for num, test := range tests {
 		bbbapi, err := NewRequest(test.url, test.secret, SHA1)
-		if(err != nil) {
+		if err != nil {
 			t.Errorf("makeRequest(...,%s,...) %d FAILED: NewRequest: %s", test.action, num, err)
 			continue
 		}
 
 		var response responsegetmeetings
 		err = bbbapi.makeRequest(&response, test.action, test.params...)
-		if(err != nil) {
-			if(!test.shouldfail) {
+		if err != nil {
+			if !test.shouldfail {
 				t.Errorf("makeRequest(...,%s,...) %d FAILED: err: %s", test.action, num, err)
 				continue
 			}
