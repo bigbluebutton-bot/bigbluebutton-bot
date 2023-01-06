@@ -6,7 +6,7 @@ import (
 	"io"
 	"os"
 
-	"github.com/ITLab-CC/bigbluebutton-bot/api"
+	"api"
 )
 
 type config struct {
