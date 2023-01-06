@@ -119,7 +119,7 @@ func TestNewRequest(t *testing.T) {
 			t.Errorf("NewRequest(%s,%s) %d FAILED: Error %s", test.url, test.secret, num, err)
 		}
 
-		if !reflect.DeepEqual(result, test.expected) {
+		if !reflect.DeepEqual(result, &test.expected) {
 			t.Errorf("NewRequest(%s,%s) %d FAILED: Object is not correct", test.url, test.secret, num)
 		} else {
 			t.Logf("NewRequest(%s,%s) %d PASSED", test.url, test.secret, num)
