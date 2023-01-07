@@ -5,8 +5,11 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"time"
 
 	"api"
+
+	bot "github.com/ITLab-CC/bigbluebutton-bot"
 )
 
 type config struct {
@@ -42,6 +45,8 @@ func main() {
 		panic(err)
 	}
 
+
+	//API-Requests
 	newmeeting, err := bbbapi.CreateMeeting("name", "meetingID", "attendeePW", "moderatorPW", "welcome text", false, false, false, 12345)
 	if err != nil {
 		panic(err)
@@ -70,23 +75,36 @@ func main() {
 
 
 
-	url, err := bbbapi.JoinGetURL(newmeeting.MeetingID, "userName", true)
+	url, err := bbbapi.JoinGetURL(newmeeting.MeetingID, "TestUser", true)
 	if err != nil {
 		panic(err)
 	}
 	fmt.Println("Moderator join url: " + url)
 
-	urlattende, cookie, userid, auth_token, session_token, internal_meeting_id, err:= bbbapi.Join(newmeeting.MeetingID, "userName", false)
+	time.Sleep(5 * time.Second)
+
+
+
+	fmt.Println("-----------------------------------------------")
+
+
+
+	client, err := bot.NewClient("bbb6.ccita.de", conf.Secret)
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println("Attende join vars: ")
-	fmt.Println(urlattende)
-	fmt.Println(cookie)
-	fmt.Println(userid)
-	fmt.Println(auth_token)
-	fmt.Println(session_token)
-	fmt.Println(internal_meeting_id)
+
+	client.OnStatus(func(status bot.Status) {
+		fmt.Printf("Bot status: %s\n", status)
+	})
+
+	fmt.Println("Bot joins " + newmeeting.MeetingName + " as moderator:")
+	err = client.Join(newmeeting.MeetingID, "Bot", true)
+	if err != nil {
+		panic(err)
+	}
+
+	time.Sleep(10 * time.Second)
 
 
 
