@@ -22,9 +22,9 @@
         "type": "go",
         "request": "launch", 
         "mode": "debug",
-        "program": "${workspaceFolder}",
+        "program": "${workspaceFolder}/_example",
         "args": [],
-        "envFile": "${workspaceFolder}/.env",
+        "envFile": "${workspaceFolder}/_example/.env",
         "showLog": true
       }
     ]
