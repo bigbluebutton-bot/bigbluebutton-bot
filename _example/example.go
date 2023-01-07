@@ -76,7 +76,7 @@ func main() {
 	}
 	fmt.Println("Moderator join url: " + url)
 
-	urlattende, cookie, userid, auth_token, session_token, err:= bbbapi.Join(newmeeting.MeetingID, "userName", false)
+	urlattende, cookie, userid, auth_token, session_token, internal_meeting_id, err:= bbbapi.Join(newmeeting.MeetingID, "userName", false)
 	if err != nil {
 		panic(err)
 	}
@@ -86,6 +86,7 @@ func main() {
 	fmt.Println(userid)
 	fmt.Println(auth_token)
 	fmt.Println(session_token)
+	fmt.Println(internal_meeting_id)
 
 
 

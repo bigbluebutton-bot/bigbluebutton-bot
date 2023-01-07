@@ -25,11 +25,13 @@ type responseJoin struct {
 // - userid
 // - auth_token
 // - session_token
-func (api *ApiRequest) Join(meetingID string, userName string, moderator bool) (string, []*http.Cookie, string, string, string, error) {
+// - internal_meeting_id
+// - error
+func (api *ApiRequest) Join(meetingID string, userName string, moderator bool) (string, []*http.Cookie, string, string, string, string, error) {
 
 	meetings, err := api.GetMeetings()
 	if err != nil {
-		return "", nil, "", "", "", err
+		return "", nil, "", "", "", "", err
 	}
 
 	m := meetings[meetingID]
@@ -63,10 +65,10 @@ func (api *ApiRequest) Join(meetingID string, userName string, moderator bool) (
 	var response responseJoin
 	err = api.makeRequest(&response, JOIN, params...)
 	if err != nil {
-		return "", nil, "", "", "", err
+		return "", nil, "", "", "", "", err
 	}
 
-	return response.URL, response.Cookie, response.UserID, response.AuthToken, response.SessionToken, nil
+	return response.URL, response.Cookie, response.UserID, response.AuthToken, response.SessionToken, response.MeetingID, nil
 }
 
 // Makes a http get request to the BigBlueButton API to join a meeting and returs:
