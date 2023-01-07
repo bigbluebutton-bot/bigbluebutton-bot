@@ -30,7 +30,7 @@ type Client struct {
 
 	ddpClient *ddp.Client
 
-	eventsOnStatus []statusListener
+	event *event
 }
 
 func NewClient(domain string, secret string) (*Client, error) {
@@ -44,11 +44,17 @@ func NewClient(domain string, secret string) (*Client, error) {
 		domain: 			domain,
 		API: 				api,
 
-		eventsOnStatus: 	nil,
+		event: 				nil,
 	}
 
+	e := &event{
+		client: c,
+	}
+
+	c.event = e
+
 	c.ddpClient = ddp.NewClient("wss://" + domain + "/html5client/websocket", "https://" + domain + "/html5client/")
-	c.ddpClient.AddStatusListener(c)
+	c.ddpClient.AddStatusListener(e)
 
 	return c, nil
 }

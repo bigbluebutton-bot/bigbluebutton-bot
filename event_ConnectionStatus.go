@@ -2,15 +2,25 @@ package bot
 
 import ddp "github.com/gopackage/ddp"
 
+type event struct {
+	client *Client
+	
+	eventsOnStatus []statusListener
+}
+
+func (e *event) Status(status int) {
+	e.client.updateStatus(status)
+}
+
 type statusListener func(Status)
 
 // AddStatusListener in order to receive status change updates.
 func (c *Client) OnStatus(listener statusListener) {
-	c.eventsOnStatus = append(c.eventsOnStatus, listener)
+	c.event.eventsOnStatus = append(c.event.eventsOnStatus, listener)
 }
 
 // status updates all status listeners with the new client status.
-func (c *Client) Status(status int) {
+func (c *Client) updateStatus(status int) {
 
 	var st Status
 	switch status {
@@ -28,7 +38,7 @@ func (c *Client) Status(status int) {
 		return
 	}
 	c.connectionStatus = st
-	for _, event := range c.eventsOnStatus {
+	for _, event := range c.event.eventsOnStatus {
 		go event(st)
 	}
 }
