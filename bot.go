@@ -9,9 +9,11 @@ import (
 
 type Status string
 const (
-	DISCONNECTED 	Status = "disconected"
+	DISCONNECTING 	Status = "disconnecting"
+	DISCONNECTED 	Status = "disconnected"
 	CONNECTING   	Status = "connecting"
 	CONNECTED 		Status = "connected"
+	RECONNECTING 	Status = "reconnecting"
 )
 
 
@@ -67,6 +69,7 @@ func NewClient(clientURL string, clientWSURL string, apiURL string, apiSecret st
 	return c, nil
 }
 
+// Join a meeting
 func (c *Client) Join(meetingID string, userName string, moderator bool) error {
 	_, _, internalUserID, authToken, _, internalMeetingID, err := c.API.Join(meetingID, userName, moderator)
 	if err != nil {

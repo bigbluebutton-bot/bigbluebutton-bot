@@ -15,8 +15,12 @@ func (e *event) Status(status int) {
 			st = CONNECTING
 		case ddp.CONNECTED:
 			st = CONNECTED
+		case ddp.DISCONNECTING:
+			st = DISCONNECTING
 		case ddp.DISCONNECTED:
 			st = DISCONNECTED
+		case ddp.RECONNECTING:
+			st = RECONNECTING
 		default:
 			st = DISCONNECTED
 	}
