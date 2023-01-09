@@ -13,23 +13,23 @@ import (
 	"strings"
 )
 
-type sha int64
+type SHA string
 
 const (
-	SHA1   sha = 0
-	SHA256 sha = 1
+	SHA1   SHA = "SHA1"
+	SHA256 SHA = "SHA256"
 )
 
 type ApiRequest struct {
 	url     string
 	secret  string
-	shatype sha
+	shatype SHA
 }
 
 // Create an object for making http get api requests to the BBB server.
 // The requests are described here: https://bigbluebutton.org/api-mate/ and
 // https://docs.bigbluebutton.org/dev/api.html
-func NewRequest(url string, secret string, shatype sha) (*ApiRequest, error) {
+func NewRequest(url string, secret string, shatype SHA) (*ApiRequest, error) {
 
 	switch shatype {
 	case SHA1:

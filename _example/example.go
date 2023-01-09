@@ -12,26 +12,62 @@ import (
 	bot "github.com/ITLab-CC/bigbluebutton-bot"
 )
 
+type configAPI struct {
+	URL    string  `json:"url"`
+	Secret string  `json:"secret"`
+	SHA    api.SHA `json:"sha"`
+}
+
+type configClient struct {
+	URL string `json:"url"`
+	WS  string `json:"ws"`
+}
+
+type configBBB struct {
+	API    configAPI	`json:"api"`
+	Client configClient	`json:"client"`
+}
+
 type config struct {
-	Url    string `json:"url"`
-	Secret string `json:"secret"`
+	BBB configBBB `json:"bbb"`
 }
 
 func readConfig(file string) config {
+	// Try to read from env
+	conf := config {
+		BBB: configBBB{
+			API: configAPI{
+				URL: os.Getenv("BBB_API_URL"),
+				Secret: os.Getenv("BBB_API_SECRET"),
+				SHA: api.SHA(os.Getenv("BBB_API_SECRET")),
+			},
+			Client: configClient{
+				URL: os.Getenv("BBB_CLIENT_URL"),
+				WS: os.Getenv("BBB_CLIENT_WS"),
+			},
+		},
+	}
+
+	if (conf.BBB.API.URL != "" && conf.BBB.API.Secret != "" && conf.BBB.API.SHA != "" && conf.BBB.Client.URL != "" && conf.BBB.Client.WS != ""){
+		fmt.Println("Using env variables for config")
+		return conf
+	}
+
 	// Open our jsonFile
 	jsonFile, err := os.Open(file)
 	// if we os.Open returns an error then handle it
-	if err != nil {
+	if (err != nil) {
 		fmt.Println(err)
 	}
 	// defer the closing of our jsonFile so that we can parse it later on
 	defer jsonFile.Close()
 	// read our opened jsonFile as a byte array.
-	byteValue, _ := io.ReadAll(jsonFile)
-	// we initialize config
-	var conf config
+	byteValue, err := io.ReadAll(jsonFile)
+	if(err != nil) {
+		panic(err)
+	}
 	// we unmarshal our byteArray which contains our jsonFile's content into conf
-	json.Unmarshal([]byte(byteValue), &conf)
+	json.Unmarshal([]byte(byteValue), &conf) 
 
 	return conf
 }
@@ -40,7 +76,7 @@ func main() {
 
 	conf := readConfig("config.json")
 
-	bbbapi, err := api.NewRequest(conf.Url, conf.Secret, api.SHA256)
+	bbbapi, err := api.NewRequest(conf.BBB.API.URL, conf.BBB.API.Secret, conf.BBB.API.SHA)
 	if err != nil {
 		panic(err)
 	}
@@ -89,7 +125,7 @@ func main() {
 
 
 
-	client, err := bot.NewClient("bbb6.ccita.de", conf.Secret)
+	client, err := bot.NewClient("bbb6.ccita.de", conf.BBB.API.Secret)
 	if err != nil {
 		panic(err)
 	}
