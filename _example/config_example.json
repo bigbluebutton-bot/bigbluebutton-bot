@@ -1,0 +1,13 @@
+{
+    "bbb": {
+        "api": {
+            "url": "https://example.com/bigbluebutton/api/",
+            "secret": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+            "sha": "SHA256"
+        },
+        "client": {
+            "url": "https://example.com/html5client/",
+            "ws": "wss://example.com/html5client/websocket"
+        }
+    }
+}
