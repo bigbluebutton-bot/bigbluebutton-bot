@@ -142,7 +142,15 @@ func main() {
 
 	time.Sleep(10 * time.Second)
 
+	fmt.Println("Bot leaves " + newmeeting.MeetingName)
+	err = client.Leave()
+	if err != nil {
+		panic(err)
+	}
 
+	time.Sleep(10 * time.Second)
+
+	
 
 	fmt.Println("-----------------------------------------------")
 

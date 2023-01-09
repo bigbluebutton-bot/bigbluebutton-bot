@@ -3,6 +3,7 @@ package bot
 import (
 	api "api"
 	"errors"
+	"time"
 
 	ddp "ddp"
 )
@@ -133,6 +134,35 @@ func (c *Client) Join(meetingID string, userName string, moderator bool) error {
 	if err != nil {
 		return errors.New("could not validateAuthToken")
 	}
+
+	return nil
+}
+
+// Leave the joined meeting
+func (c *Client) Leave() error {
+	// If not connected, return an error
+	if(c.connectionStatus != CONNECTED) {
+		// If is connecting retry 5 times
+		if(c.connectionStatus == CONNECTING) {
+			i := 0
+			for(i < 5) {
+				if(c.connectionStatus == CONNECTED) {
+					c.Leave()
+				}
+				time.Sleep(time.Second * 1)
+				i += 1
+			}
+		}
+		return errors.New("Client is in no meeting. First Join a meeting with: client.Join(meetingID string, userName string, moderator bool)")
+	}
+
+	c.ddpClient.Call("userLeftMeeting")
+	c.ddpClient.Call("setExitReason", "logout")
+	// c.ddpClient.UnSubscribe("from all subs")
+
+	c.ddpClient.Close()
+
+	c.ddpClient = nil
 
 	return nil
 }
