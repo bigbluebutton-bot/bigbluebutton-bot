@@ -125,7 +125,7 @@ func main() {
 
 
 
-	client, err := bot.NewClient("bbb6.ccita.de", conf.BBB.API.Secret)
+	client, err := bot.NewClient(conf.BBB.Client.URL, conf.BBB.Client.WS, conf.BBB.API.URL, conf.BBB.API.Secret)
 	if err != nil {
 		panic(err)
 	}

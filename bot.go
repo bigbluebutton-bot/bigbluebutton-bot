@@ -19,29 +19,39 @@ const (
 // session and acts as a message pump for other tools.
 type Client struct {
 	// connectionStatus is the current connection status of the client
-	connectionStatus Status
-	// // statusListeners will be informed when the connection status of the client changes
-	// statusListeners []statusListener
+	connectionStatus 	Status
 
-	// BBB-url the client is connected to
-	domain string
+	// BBB-urls the client is connected to
+	clientURL			string
+	clientWSURL			string
+	apiURL				string
+	apiSecret			string
 	// to make api requests to the BBB-server
-	API *api.ApiRequest
+	API 				*api.ApiRequest
 
-	ddpClient *ddp.Client
+	ddpClient 			*ddp.Client
 
-	event *event
+	event 				*event
 }
 
-func NewClient(domain string, secret string) (*Client, error) {
-	api, err := api.NewRequest("https://" + domain + "/bigbluebutton/api", secret, api.SHA256)
+func NewClient(clientURL string, clientWSURL string, apiURL string, apiSecret string) (*Client, error) {
+	api, err := api.NewRequest(apiURL, apiSecret, api.SHA256)
 	if (err != nil) {
 		return nil, err
 	}
 	
+	ddpClient := ddp.NewClient(clientWSURL, clientURL)
+
 	c := &Client{
 		connectionStatus: 	DISCONNECTED,
-		domain: 			domain,
+
+		clientURL:			clientURL,
+		clientWSURL:		clientWSURL,
+		apiURL:				apiURL,
+		apiSecret:			apiSecret,
+
+		ddpClient:			ddpClient,
+
 		API: 				api,
 
 		event: 				nil,
@@ -52,8 +62,6 @@ func NewClient(domain string, secret string) (*Client, error) {
 	}
 
 	c.event = e
-
-	c.ddpClient = ddp.NewClient("wss://" + domain + "/html5client/websocket", "https://" + domain + "/html5client/")
 	c.ddpClient.AddStatusListener(e)
 
 	return c, nil
