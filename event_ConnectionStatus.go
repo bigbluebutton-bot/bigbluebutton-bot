@@ -4,24 +4,11 @@ import ddp "github.com/gopackage/ddp"
 
 type event struct {
 	client *Client
-	
+	// statusListeners will be informed when the connection status of the client changes
 	eventsOnStatus []statusListener
 }
 
 func (e *event) Status(status int) {
-	e.client.updateStatus(status)
-}
-
-type statusListener func(Status)
-
-// AddStatusListener in order to receive status change updates.
-func (c *Client) OnStatus(listener statusListener) {
-	c.event.eventsOnStatus = append(c.event.eventsOnStatus, listener)
-}
-
-// status updates all status listeners with the new client status.
-func (c *Client) updateStatus(status int) {
-
 	var st Status
 	switch status {
 		case ddp.CONNECTING:
@@ -34,11 +21,23 @@ func (c *Client) updateStatus(status int) {
 			st = DISCONNECTED
 	}
 
-	if c.connectionStatus == st {
+	e.client.updateStatus(st)
+}
+
+type statusListener func(Status)
+
+// AddStatusListener in order to receive status change updates.
+func (c *Client) OnStatus(listener statusListener) {
+	c.event.eventsOnStatus = append(c.event.eventsOnStatus, listener)
+}
+
+// status updates all status listeners with the new client status.
+func (c *Client) updateStatus(status Status) {
+	if c.connectionStatus == status {
 		return
 	}
-	c.connectionStatus = st
+	c.connectionStatus = status
 	for _, event := range c.event.eventsOnStatus {
-		go event(st)
+		go event(status)
 	}
 }
