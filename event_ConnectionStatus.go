@@ -1,6 +1,6 @@
 package bot
 
-import ddp "github.com/gopackage/ddp"
+import ddp "ddp"
 
 type event struct {
 	client *Client

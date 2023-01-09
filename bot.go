@@ -4,7 +4,7 @@ import (
 	api "api"
 	"errors"
 
-	ddp "github.com/gopackage/ddp"
+	ddp "ddp"
 )
 
 type Status string
