@@ -140,6 +140,16 @@ func main() {
 		panic(err)
 	}
 
+	// err = client.OnGroupChatMsg(func(msg string) {
+	// 	if(msg.SenderId != client.UserId) {
+	// 		fmt.Printf("Group chat message: %s: %s\n", msg.SenderName, msg.Message)
+	// 		if(msg.Message == "ping") {
+	// 			client.SendGroupChatMsg("pong")
+	// 		}
+	// 	}
+	// })
+
+
 	time.Sleep(10 * time.Second)
 
 	fmt.Println("Bot leaves " + newmeeting.MeetingName)
