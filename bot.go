@@ -25,9 +25,9 @@ type Client struct {
 	connectionStatus 	Status
 
 	// BBB-urls the client is connected to
-	clientURL			string
-	clientWSURL			string
-	apiURL				string
+	ClientURL			string
+	ClientWSURL			string
+	ApiURL				string
 	apiSecret			string
 	// to make api requests to the BBB-server
 	API 				*api.ApiRequest
@@ -48,9 +48,9 @@ func NewClient(clientURL string, clientWSURL string, apiURL string, apiSecret st
 	c := &Client{
 		connectionStatus: 	DISCONNECTED,
 
-		clientURL:			clientURL,
-		clientWSURL:		clientWSURL,
-		apiURL:				apiURL,
+		ClientURL:			clientURL,
+		ClientWSURL:		clientWSURL,
+		ApiURL:				apiURL,
 		apiSecret:			apiSecret,
 
 		ddpClient:			ddpClient,
