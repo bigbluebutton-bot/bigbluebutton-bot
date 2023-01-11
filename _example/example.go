@@ -10,6 +10,8 @@ import (
 	"api"
 
 	bot "github.com/ITLab-CC/bigbluebutton-bot"
+
+	ddp "ddp"
 )
 
 type configAPI struct {
@@ -140,17 +142,25 @@ func main() {
 		panic(err)
 	}
 
-	// err = client.OnGroupChatMsg(func(msg string) {
-	// 	if(msg.SenderId != client.UserId) {
-	// 		fmt.Printf("Group chat message: %s: %s\n", msg.SenderName, msg.Message)
-	// 		if(msg.Message == "ping") {
-	// 			client.SendGroupChatMsg("pong")
-	// 		}
-	// 	}
-	// })
+	err = client.OnGroupChatMsg(func(collection string, operation string, id string, doc ddp.Update) {
+		fmt.Println(collection)
+		fmt.Println(operation)
+		fmt.Println(id)
+		fmt.Println(doc)
+
+		// if(msg.SenderId != client.UserId) {
+		// 	fmt.Printf("Group chat message: %s: %s\n", msg.SenderName, msg.Message)
+		// 	if(msg.Message == "ping") {
+		// 		client.SendGroupChatMsg("pong")
+		// 	}
+		// }
+	})
+	if err != nil {
+		panic(err)
+	}
 
 
-	time.Sleep(10 * time.Second)
+	time.Sleep(100 * time.Second)
 
 	fmt.Println("Bot leaves " + newmeeting.MeetingName)
 	err = client.Leave()
