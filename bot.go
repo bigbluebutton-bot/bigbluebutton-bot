@@ -8,21 +8,21 @@ import (
 	ddp "ddp"
 )
 
-type Status string
+type StatusType string
 const (
-	DISCONNECTING 	Status = "disconnecting"
-	DISCONNECTED 	Status = "disconnected"
-	CONNECTING   	Status = "connecting"
-	CONNECTED 		Status = "connected"
-	RECONNECTING 	Status = "reconnecting"
+	DISCONNECTING 	StatusType = "disconnecting"
+	DISCONNECTED 	StatusType = "disconnected"
+	CONNECTING   	StatusType = "connecting"
+	CONNECTED 		StatusType = "connected"
+	RECONNECTING 	StatusType = "reconnecting"
 )
 
 
 // Client represents a BigBlueButton client connection. The BigBlueButton client establish a BigBlueButton
 // session and acts as a message pump for other tools.
 type Client struct {
-	// connectionStatus is the current connection status of the client
-	connectionStatus 	Status
+	// Status is the current connection status of the client
+	Status 	StatusType
 
 	// BBB-urls the client is connected to
 	ClientURL			string
@@ -46,7 +46,7 @@ func NewClient(clientURL string, clientWSURL string, apiURL string, apiSecret st
 	ddpClient := ddp.NewClient(clientWSURL, clientURL)
 
 	c := &Client{
-		connectionStatus: 	DISCONNECTED,
+		Status: 	DISCONNECTED,
 
 		ClientURL:			clientURL,
 		ClientWSURL:		clientWSURL,
@@ -141,12 +141,12 @@ func (c *Client) Join(meetingID string, userName string, moderator bool) error {
 // Leave the joined meeting
 func (c *Client) Leave() error {
 	// If not connected, return an error
-	if(c.connectionStatus != CONNECTED) {
+	if(c.Status != CONNECTED) {
 		// If is connecting retry 5 times
-		if(c.connectionStatus == CONNECTING) {
+		if(c.Status == CONNECTING) {
 			i := 0
 			for(i < 5) {
-				if(c.connectionStatus == CONNECTED) {
+				if(c.Status == CONNECTED) {
 					c.Leave()
 				}
 				time.Sleep(time.Second * 1)

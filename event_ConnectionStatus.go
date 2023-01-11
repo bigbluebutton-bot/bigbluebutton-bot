@@ -9,7 +9,7 @@ type event struct {
 }
 
 func (e *event) Status(status int) {
-	var st Status
+	var st StatusType
 	switch status {
 		case ddp.CONNECTING:
 			st = CONNECTING
@@ -28,7 +28,7 @@ func (e *event) Status(status int) {
 	e.client.updateStatus(st)
 }
 
-type statusListener func(Status)
+type statusListener func(StatusType)
 
 // AddStatusListener in order to receive status change updates.
 func (c *Client) OnStatus(listener statusListener) {
@@ -36,11 +36,11 @@ func (c *Client) OnStatus(listener statusListener) {
 }
 
 // status updates all status listeners with the new client status.
-func (c *Client) updateStatus(status Status) {
-	if c.connectionStatus == status {
+func (c *Client) updateStatus(status StatusType) {
+	if c.Status == status {
 		return
 	}
-	c.connectionStatus = status
+	c.Status = status
 	for _, event := range c.event.eventsOnStatus {
 		go event(status)
 	}

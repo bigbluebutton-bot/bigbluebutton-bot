@@ -130,7 +130,7 @@ func main() {
 		panic(err)
 	}
 
-	client.OnStatus(func(status bot.Status) {
+	client.OnStatus(func(status bot.StatusType) {
 		fmt.Printf("Bot status: %s\n", status)
 	})
 
