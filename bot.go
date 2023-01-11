@@ -17,6 +17,11 @@ const (
 	RECONNECTING 	StatusType = "reconnecting"
 )
 
+// This is for all events that are in "event_....go" files
+type event struct {
+	client *Client
+}
+
 
 // Client represents a BigBlueButton client connection. The BigBlueButton client establish a BigBlueButton
 // session and acts as a message pump for other tools.
@@ -34,7 +39,8 @@ type Client struct {
 
 	ddpClient 			*ddp.Client
 
-	event 				*event
+	// events will store all the functions executed on certain events. (events["OnStatus"][]func(StatusType))
+	events 				map[string][]interface{}
 }
 
 func NewClient(clientURL string, clientWSURL string, apiURL string, apiSecret string) (*Client, error) {
@@ -57,15 +63,8 @@ func NewClient(clientURL string, clientWSURL string, apiURL string, apiSecret st
 
 		API: 				api,
 
-		event: 				nil,
+		events: 			make(map[string][]interface{}),
 	}
-
-	e := &event{
-		client: c,
-	}
-
-	c.event = e
-	c.ddpClient.AddStatusListener(e)
 
 	return c, nil
 }
