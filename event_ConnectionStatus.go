@@ -23,7 +23,7 @@ func (c *Client) OnStatus(listener statusListener) {
 func (e *event) Status(status int) {
 	var st StatusType
 	switch status {
-	case ddp.DALLING:
+	case ddp.DIALING:
 		st = CONNECTING
 	case ddp.CONNECTING:
 		st = CONNECTING
