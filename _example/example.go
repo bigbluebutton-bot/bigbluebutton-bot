@@ -11,7 +11,7 @@ import (
 
 	bot "github.com/ITLab-CC/bigbluebutton-bot"
 
-	ddp "ddp"
+	bbb "github.com/ITLab-CC/bigbluebutton-bot/bbb"
 )
 
 type configAPI struct {
@@ -142,12 +142,8 @@ func main() {
 		panic(err)
 	}
 
-	err = client.OnGroupChatMsg(func(collection string, operation string, id string, doc ddp.Update) {
-		fmt.Println(collection)
-		fmt.Println(operation)
-		fmt.Println(id)
-		fmt.Println(doc)
-
+	err = client.OnGroupChatMsg(func(msg bbb.Message) {
+		fmt.Println("[" + msg.SenderName + "]: " + msg.Message)
 		// if(msg.SenderId != client.UserId) {
 		// 	fmt.Printf("Group chat message: %s: %s\n", msg.SenderName, msg.Message)
 		// 	if(msg.Message == "ping") {

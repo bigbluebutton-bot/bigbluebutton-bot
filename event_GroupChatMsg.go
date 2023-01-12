@@ -4,9 +4,13 @@ import (
 	ddp "ddp"
 	"errors"
 	"reflect"
+
+	convert "github.com/benpate/convert"
+
+	bbb "github.com/ITLab-CC/bigbluebutton-bot/bbb"
 )
 
-type groupChatMsgListener func(collection string, operation string, id string, doc ddp.Update)
+type groupChatMsgListener func(msg bbb.Message)
 
 // OnGroupChatMsg in order to receive GroupChatMsg changes.
 func (c *Client) OnGroupChatMsg(listener groupChatMsgListener) error {
@@ -38,23 +42,39 @@ func (c *Client) OnGroupChatMsg(listener groupChatMsgListener) error {
 
 // Will be emited by ddpClient
 func (e *event) CollectionUpdate(collection string, operation string, id string, doc ddp.Update) {
-	e.client.updateGroupChatMsg(collection, operation, id, doc)
+
+	var msg bbb.Message
+	if doc == nil || doc["id"] == nil {
+		return
+	} else {
+		msg = bbb.Message{
+			ID:                 convert.String(doc["id"]),
+			Timestamp:          convert.Int64(doc["timestamp"]),
+			CorrelationID:      convert.String(doc["correlationId"]),
+			ChatEmphasizedText: convert.Bool(doc["chatEmphasizedText"]),
+			Message:            convert.String(doc["message"]),
+			Sender:             convert.String(doc["sender"]),
+			SenderName:         convert.String(doc["senderName"]),
+			SenderRole:         convert.String(doc["senderRole"]),
+			MeetingId:          convert.String(doc["meetingId"]),
+			ChatId:             convert.String(doc["chatId"]),
+		}
+	}
+
+	e.client.updateGroupChatMsg(msg)
 }
 
 // informs all listeners with the new infos.
-func (c *Client) updateGroupChatMsg(collection string, operation string, id string, doc ddp.Update) {
+func (c *Client) updateGroupChatMsg(msg bbb.Message) {
 	// Inform all listeners
 	for _, event := range c.events["OnGroupChatMsg"] {
 
 		// call event(infos)
 		f := reflect.TypeOf(event)
 		if f.Kind() == reflect.Func { //is function
-			if f.NumIn() == 4 && f.NumOut() == 0 { //inbound parameters == 1, outbound parameters == 0
-				if (f.In(0).Kind() == reflect.String && //parameter 0 is of type string (string)
-				   f.In(1).Kind() == reflect.String && //parameter 1 is of type string (string)
-				   f.In(2).Kind() == reflect.String && //parameter 2 is of type string (string)
-				   f.In(3).Kind() == reflect.Map) { //parameter 3 is of type struct (ddp.Update)
-					reflect.ValueOf(event).Call([]reflect.Value{reflect.ValueOf(collection), reflect.ValueOf(operation), reflect.ValueOf(id), reflect.ValueOf(doc)})
+			if f.NumIn() == 1 && f.NumOut() == 0 { //inbound parameters == 1, outbound parameters == 0
+				if f.In(0).Kind() == reflect.Struct { //parameter 0 is of type string (string){ //parameter 3 is of type struct (ddp.Update)
+					reflect.ValueOf(event).Call([]reflect.Value{reflect.ValueOf(msg)})
 				}
 			}
 		}
