@@ -61,7 +61,7 @@ func (c *Client) updateGroupChatMsg(msg bbb.Message) {
 		if f.Kind() == reflect.Func { //is function
 			if f.NumIn() == 1 && f.NumOut() == 0 { //inbound parameters == 1, outbound parameters == 0
 				if f.In(0).Kind() == reflect.Struct { //parameter 0 is of type string (string){ //parameter 3 is of type struct (ddp.Update)
-					reflect.ValueOf(event).Call([]reflect.Value{reflect.ValueOf(msg)})
+					go reflect.ValueOf(event).Call([]reflect.Value{reflect.ValueOf(msg)})
 				}
 			}
 		}

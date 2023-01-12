@@ -55,7 +55,7 @@ func (c *Client) updateStatus(status StatusType) {
 		if f.Kind() == reflect.Func { //is function
 			if f.NumIn() == 1 && f.NumOut() == 0 { //inbound parameters == 1, outbound parameters == 0
 				if f.In(0).Kind() == reflect.String { //parameter 0 is of type string (StatusType)
-					reflect.ValueOf(event).Call([]reflect.Value{reflect.ValueOf(status)})
+					go reflect.ValueOf(event).Call([]reflect.Value{reflect.ValueOf(status)})
 				}
 			}
 		}
