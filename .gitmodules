@@ -1,0 +1,3 @@
+[submodule "ddp-go"]
+	path = ddp-go
+	url = https://github.com/JulianKropp/ddp-go

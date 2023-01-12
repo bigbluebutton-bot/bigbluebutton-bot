@@ -13,23 +13,23 @@ import (
 	"strings"
 )
 
-type sha int64
+type SHA string
 
 const (
-	SHA1   sha = 0
-	SHA256 sha = 1
+	SHA1   SHA = "SHA1"
+	SHA256 SHA = "SHA256"
 )
 
-type api_request struct {
+type ApiRequest struct {
 	url     string
 	secret  string
-	shatype sha
+	shatype SHA
 }
 
 // Create an object for making http get api requests to the BBB server.
 // The requests are described here: https://bigbluebutton.org/api-mate/ and
 // https://docs.bigbluebutton.org/dev/api.html
-func NewRequest(url string, secret string, shatype sha) (api_request, error) {
+func NewRequest(url string, secret string, shatype SHA) (*ApiRequest, error) {
 
 	switch shatype {
 	case SHA1:
@@ -41,7 +41,7 @@ func NewRequest(url string, secret string, shatype sha) (api_request, error) {
 	}
 
 	if !(strings.HasPrefix(url, "http://") || strings.HasPrefix(url, "https://")) {
-		return api_request{}, errors.New("url has the wrong format. It should look like this: https://example.com/api/")
+		return &ApiRequest{}, errors.New("url has the wrong format. It should look like this: https://example.com/api/")
 	}
 
 	if !strings.HasSuffix(url, "/") {
@@ -53,7 +53,7 @@ func NewRequest(url string, secret string, shatype sha) (api_request, error) {
 		url = url + string("api/")
 	}
 
-	return api_request{
+	return &ApiRequest{
 		url:     url,
 		secret:  secret,
 		shatype: shatype,
@@ -121,7 +121,7 @@ type params struct {
 	value string
 }
 
-func (api api_request) buildParams(params ...params) string {
+func (api *ApiRequest) buildParams(params ...params) string {
 	var param string
 	for count, p := range params {
 
@@ -144,7 +144,7 @@ func (api api_request) buildParams(params ...params) string {
 
 // Generate the checksum for a api request.
 // The checksum is generated with the sha1 or sha256 algorithm.
-func (api api_request) generateChecksum(action action, params string) string {
+func (api *ApiRequest) generateChecksum(action action, params string) string {
 	if api.shatype == SHA1 {
 		return api.generateChecksumSHA1(action, params)
 	} else {
@@ -153,7 +153,7 @@ func (api api_request) generateChecksum(action action, params string) string {
 }
 
 // Generate the SHA256 checksum for a api request.
-func (api api_request) generateChecksumSHA256(action action, params string) string {
+func (api ApiRequest) generateChecksumSHA256(action action, params string) string {
 	//Generate sha256 and sha1 checksum
 	checksum := sha256.New()
 	checksum.Write([]byte(string(action) + params + api.secret))
@@ -161,7 +161,7 @@ func (api api_request) generateChecksumSHA256(action action, params string) stri
 }
 
 // Generate the SHA1 checksum for a api request.
-func (api api_request) generateChecksumSHA1(action action, params string) string {
+func (api *ApiRequest) generateChecksumSHA1(action action, params string) string {
 	//Generate sha256 and sha1 checksum
 	checksum := sha1.New()
 	checksum.Write([]byte(string(action) + params + api.secret))
@@ -183,7 +183,7 @@ type responseerror struct {
 	Message string `xml:"message"`
 }
 
-func (api api_request) buildURL(action action, params ...params) string {
+func (api *ApiRequest) buildURL(action action, params ...params) string {
 	param := api.buildParams(params...)
 	checksum := api.generateChecksum(action, param)
 
@@ -197,7 +197,7 @@ func (api api_request) buildURL(action action, params ...params) string {
 	return url
 }
 
-func (api api_request) makeRequest(response any, action action, params ...params) error {
+func (api *ApiRequest) makeRequest(response any, action action, params ...params) error {
 
 	url := api.buildURL(action, params...)
 
@@ -208,7 +208,7 @@ func (api api_request) makeRequest(response any, action action, params ...params
 	if err != nil {
 		return err
 	}
-	if(resp.StatusCode != 200) {
+	if resp.StatusCode != 200 {
 		return errors.New("Server returned: " + resp.Status)
 	}
 
@@ -219,7 +219,6 @@ func (api api_request) makeRequest(response any, action action, params ...params
 	if err != nil {
 		return err
 	}
-
 
 	//Unmarshal xml
 	err = xml.Unmarshal(body, &response)

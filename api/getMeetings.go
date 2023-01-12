@@ -4,42 +4,41 @@ import (
 	"errors"
 )
 
-
 type responsegetmeetings struct {
-    Script      string   `xml:"script"`
-    ReturnCode  string   `xml:"returncode"`
-	Errors   	[]responseerror `xml:"errors>error"`
-    Meetings    []meeting`xml:"meetings>meeting"`
-    MessageKey  string   `xml:"messageKey"`
-    Message     string   `xml:"message"`
+	Script     string          `xml:"script"`
+	ReturnCode string          `xml:"returncode"`
+	Errors     []responseerror `xml:"errors>error"`
+	Meetings   []meeting       `xml:"meetings>meeting"`
+	MessageKey string          `xml:"messageKey"`
+	Message    string          `xml:"message"`
 }
 
 type meeting struct {
-	MeetingName   string    `xml:"meetingName"`
-	MeetingID     string    `xml:"meetingID"`
-	InternalID    string    `xml:"internalMeetingID"`
-	CreateTime    int64     `xml:"createTime"`
-	CreateDate    string    `xml:"createDate"`
-	VoiceBridge   int       `xml:"voiceBridge"`
-	DialNumber    string    `xml:"dialNumber"`
-	AttendeePW    string    `xml:"attendeePW"`
-	ModeratorPW   string    `xml:"moderatorPW"`
-	Running       bool      `xml:"running"`
-	Duration      int       `xml:"duration"`
-	HasJoined     bool      `xml:"hasUserJoined"`
-	Recording     bool      `xml:"recording"`
-	ForciblyEnded bool      `xml:"hasBeenForciblyEnded"`
-	StartTime     int64     `xml:"startTime"`
-	EndTime       int64     `xml:"endTime"`
-	Participants  int       `xml:"participantCount"`
-	Listeners     int       `xml:"listenerCount"`
-	VoiceCount    int       `xml:"voiceParticipantCount"`
-	VideoCount    int       `xml:"videoCount"`
-	MaxUsers      int       `xml:"maxUsers"`
-	Moderators    int      	`xml:"moderatorCount"`
-	Attendees     []attendee`xml:"attendees>attendee"`
-	Metadata 	  metadata 	`xml:"metadata"`
-	IsBreakout 	  bool 		`xml:"isBreakout"`
+	MeetingName   string     `xml:"meetingName"`
+	MeetingID     string     `xml:"meetingID"`
+	InternalID    string     `xml:"internalMeetingID"`
+	CreateTime    int64      `xml:"createTime"`
+	CreateDate    string     `xml:"createDate"`
+	VoiceBridge   int        `xml:"voiceBridge"`
+	DialNumber    string     `xml:"dialNumber"`
+	AttendeePW    string     `xml:"attendeePW"`
+	ModeratorPW   string     `xml:"moderatorPW"`
+	Running       bool       `xml:"running"`
+	Duration      int        `xml:"duration"`
+	HasJoined     bool       `xml:"hasUserJoined"`
+	Recording     bool       `xml:"recording"`
+	ForciblyEnded bool       `xml:"hasBeenForciblyEnded"`
+	StartTime     int64      `xml:"startTime"`
+	EndTime       int64      `xml:"endTime"`
+	Participants  int        `xml:"participantCount"`
+	Listeners     int        `xml:"listenerCount"`
+	VoiceCount    int        `xml:"voiceParticipantCount"`
+	VideoCount    int        `xml:"videoCount"`
+	MaxUsers      int        `xml:"maxUsers"`
+	Moderators    int        `xml:"moderatorCount"`
+	Attendees     []attendee `xml:"attendees>attendee"`
+	Metadata      metadata   `xml:"metadata"`
+	IsBreakout    bool       `xml:"isBreakout"`
 }
 
 type attendee struct {
@@ -61,7 +60,7 @@ type metadata struct {
 }
 
 // Makes a http get request to the BigBlueButton API and returns a list of meetings
-func (api *api_request) GetMeetings() (map[string]meeting, error) {
+func (api *ApiRequest) GetMeetings() (map[string]meeting, error) {
 
 	//Make the request
 	var response responsegetmeetings
@@ -72,11 +71,11 @@ func (api *api_request) GetMeetings() (map[string]meeting, error) {
 
 	//Check if the request was successful
 	if response.ReturnCode != "SUCCESS" {
-		if(response.MessageKey != "" && response.Message != "") {
+		if response.MessageKey != "" && response.Message != "" {
 			return map[string]meeting{}, errors.New(response.MessageKey + ": " + response.Message)
 		}
-		if(response.Errors != nil) {
-			if(response.Errors[0].Key != "" && response.Errors[0].Message != "") {
+		if response.Errors != nil {
+			if response.Errors[0].Key != "" && response.Errors[0].Message != "" {
 				return map[string]meeting{}, errors.New(response.Errors[0].Key + ": " + response.Errors[0].Message)
 			}
 		}

@@ -24,8 +24,11 @@ jobs:
 #    - name: Build
 #      run: go build -v ./...
 
-    - name: Test
+    - name: API
       env: # an environment variable
-        BBB_URL: ${{ secrets.BBB_SERVER_URL }}
-        BBB_SECRET: ${{ secrets.BBB_SERVER_SECRET }}
-      run: go test -v ./...
+        BBB_API_URL: ${{ secrets.BBB_API_URL }}
+        BBB_API_SECRET: ${{ secrets.BBB_API_SECRET }}
+        BBB_API_SHA: ${{ secrets.BBB_API_SHA }}
+        BBB_CLIENT_URL: ${{ secrets.BBB_CLIENT_URL }}
+        BBB_CLIENT_WS: ${{ secrets.BBB_CLIENT_WS }}
+      run: cd api && go test -v ./...

@@ -83,9 +83,9 @@ func TestCreateMeeting(t *testing.T) {
 		},
 	}
 
-	conf := readConfig("../config.json", t)	// Read config from file or environment. This function is in "api_test.go"
+	conf := readConfig("../_example/config.json", t)	// Read config from file or environment. This function is in "api_test.go"
 
-	bbbapi, err := NewRequest(conf.Url, conf.Secret, SHA1)
+	bbbapi, err := NewRequest(conf.BBB.API.URL, conf.BBB.API.Secret, SHA1)
 	if err != nil {
 		t.Errorf("CreateMeeting() FAILED: NewRequest: %s", err)
 		return
