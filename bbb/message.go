@@ -31,5 +31,18 @@ func ConvertInToMessage(content ddp.Update) Message {
 		SenderRole:         convert.String(content["senderRole"]),
 		MeetingId:          convert.String(content["meetingId"]),
 		ChatId:             convert.String(content["chatId"]),
+
 	}
+}
+
+type MessageSend struct {
+	ID                 string            `json:"correlationId"`
+	Sender             MessageSendSender `json:"sender"`
+	ChatEmphasizedText bool              `json:"chatEmphasizedText"`
+	Message            string            `json:"message"`
+}
+type MessageSendSender struct {
+	ID   string `json:"id"`
+	Name string `json:"name"`
+	Role string `json:"role"`
 }

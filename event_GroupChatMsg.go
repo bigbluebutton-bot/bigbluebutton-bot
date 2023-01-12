@@ -4,8 +4,10 @@ import (
 	ddp "ddp"
 	"errors"
 	"reflect"
+	"time"
 
 	bbb "github.com/ITLab-CC/bigbluebutton-bot/bbb"
+	"github.com/benpate/convert"
 )
 
 type groupChatMsgListener func(msg bbb.Message)
@@ -64,4 +66,28 @@ func (c *Client) updateGroupChatMsg(msg bbb.Message) {
 			}
 		}
 	}
+}
+
+
+func (c *Client) SendChatMsg(message string, chatId string) bool {
+	now := time.Now()
+	timestemp := convert.String(now.UnixNano())
+
+	messageSend := bbb.MessageSend{
+		ID: c.UserID + timestemp[:len(timestemp)-(len(timestemp)-13)],
+		Sender: bbb.MessageSendSender{
+			ID:   c.UserID,
+			Name: "",
+			Role: "",
+		},
+		ChatEmphasizedText: true,
+		Message:            message,
+	}
+
+	_, err := c.ddpClient.Call("sendGroupChatMsg", chatId, messageSend)
+	if err == nil {
+		return false
+	}
+
+	return true
 }

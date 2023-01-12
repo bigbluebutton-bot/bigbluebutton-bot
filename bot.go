@@ -41,6 +41,11 @@ type Client struct {
 
 	// events will store all the functions executed on certain events. (events["OnStatus"][]func(StatusType))
 	events 				map[string][]interface{}
+
+	// after validateAuthToken there are the following informations
+	ConnectionID 		string `json:"connectionId"`
+	MeetingID			string `json:"meetingId"` // internal meetingID
+	UserID 				string `json:"userId"`
 }
 
 func NewClient(clientURL string, clientWSURL string, apiURL string, apiSecret string) (*Client, error) {

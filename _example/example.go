@@ -143,20 +143,22 @@ func main() {
 	}
 
 	err = client.OnGroupChatMsg(func(msg bbb.Message) {
+
 		fmt.Println("[" + msg.SenderName + "]: " + msg.Message)
-		// if(msg.SenderId != client.UserId) {
-		// 	fmt.Printf("Group chat message: %s: %s\n", msg.SenderName, msg.Message)
-		// 	if(msg.Message == "ping") {
-		// 		client.SendGroupChatMsg("pong")
-		// 	}
-		// }
+
+		if(msg.Sender != client.UserID) {
+			if(msg.Message == "ping") {
+				fmt.Println("Sending pong")
+				client.SendChatMsg("pong", msg.ChatId)
+			}
+		}
 	})
 	if err != nil {
 		panic(err)
 	}
 
 
-	time.Sleep(100 * time.Second)
+	time.Sleep(20 * time.Second)
 
 	fmt.Println("Bot leaves " + newmeeting.MeetingName)
 	err = client.Leave()
@@ -164,7 +166,7 @@ func main() {
 		panic(err)
 	}
 
-	time.Sleep(10 * time.Second)
+	time.Sleep(5 * time.Second)
 
 	
 
