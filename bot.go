@@ -81,48 +81,6 @@ func (c *Client) Join(meetingID string, userName string, moderator bool) error {
 		return err
 	}
 
-	err = c.ddpClient.Sub("meteor_autoupdate_clientVersions")
-	if err != nil {
-		return err
-	}
-
-	settings := `[
-		{
-			"application": {
-			"animations": false,
-			"chatAudioAlerts": false,
-			"chatPushAlerts": false,
-			"userJoinAudioAlerts": false,
-			"userJoinPushAlerts": false,
-			"userLeaveAudioAlerts": false,
-			"userLeavePushAlerts": false,
-			"raiseHandAudioAlerts": false,
-			"raiseHandPushAlerts": false,
-			"guestWaitingAudioAlerts": false,
-			"guestWaitingPushAlerts": false,
-			"paginationEnabled": false,
-			"pushLayoutToEveryone": false,
-			"fallbackLocale": "en",
-			"overrideLocale": null,
-			"locale": "en"
-			},
-			"audio": {
-			"inputDeviceId": "undefined",
-			"outputDeviceId": "undefined"
-			},
-			"dataSaving": {
-			"viewParticipantsWebcams": true,
-			"viewScreenshare": true
-			}
-		}
-		]
-	}`
-
-	_, err = c.ddpClient.Call("userChangedLocalSettings", settings)
-	if err != nil {
-		return err
-	}
-
 	err = c.ddpClient.Sub("current-user")
 	if err != nil {
 		return errors.New("could sub current-user")
