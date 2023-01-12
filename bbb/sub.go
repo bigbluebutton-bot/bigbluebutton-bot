@@ -3,39 +3,39 @@ package bbb
 type SubType int
 
 const (
-	Users SubType = iota
-	Polls
-	Presentations
-	Slides
-	SlidePositions
-	Captions
-	VoiceUsers
-	WhiteboardMultiUser
-	Screenshare
-	GroupChat
-	PresentationPods
-	UsersSettings
-	GuestUser
-	UsersInfos
-	MeetingTimeRemaining
-	LocalSettings
-	UsersTyping
-	RecordMeetings
-	VideoStreams
-	ConnectionStatus
-	VoiceCallStates
-	ExternalVideoMeetings
-	Breakouts
-	BreakoutsHistory
-	Pads
-	PadsSessions
-	PadsUpdates
-	UsersPersistentData
-	StreamCursor
-	StreamAnnotationsAdded
-	StreamAnnotationsRemoved
-	GroupChatMsg
-	CurrentPoll
+	UsersSub SubType = iota
+	PollsSub
+	PresentationsSub
+	SlidesSub
+	SlidePositionsSub
+	CaptionsSub
+	VoiceUsersSub
+	WhiteboardMultiUserSub
+	ScreenshareSub
+	GroupChatSub
+	PresentationPodsSub
+	UsersSettingsSub
+	GuestUserSub
+	UsersInfosSub
+	MeetingTimeRemainingSub
+	LocalSettingsSub
+	UsersTypingSub
+	RecordMeetingsSub
+	VideoStreamsSub
+	ConnectionStatusSub
+	VoiceCallStatesSub
+	ExternalVideoMeetingsSub
+	BreakoutsSub
+	BreakoutsHistorySub
+	PadsSub
+	PadsSessionsSub
+	PadsUpdatesSub
+	UsersPersistentDataSub
+	StreamCursorSub
+	StreamAnnotationsAddedSub
+	StreamAnnotationsRemovedSub
+	GroupChatMsgSub
+	CurrentPollSub
 )
 
 type streamsettings struct {
@@ -52,74 +52,73 @@ func GetSub(SubName SubType) (string, []interface{}) {
 	}
 
 	switch SubName {
-	case Users:
+	case UsersSub:
 		return "users", []interface{}{}
-	case Polls:
+	case PollsSub:
 		return "polls", []interface{}{}
-	case Presentations:
+	case PresentationsSub:
 		return "presentations", []interface{}{}
-	case Slides:
+	case SlidesSub:
 		return "slides", []interface{}{}
-	case SlidePositions:
+	case SlidePositionsSub:
 		return "slide-positions", []interface{}{}
-	case Captions:
+	case CaptionsSub:
 		return "captions", []interface{}{}
-	case VoiceUsers:
+	case VoiceUsersSub:
 		return "voice-users", []interface{}{}
-	case WhiteboardMultiUser:
+	case WhiteboardMultiUserSub:
 		return "whiteboard-multi-user", []interface{}{}
-	case Screenshare:
+	case ScreenshareSub:
 		return "screenshare", []interface{}{}
-	case GroupChat:
+	case GroupChatSub:
 		return "group-chat", []interface{}{}
-	case PresentationPods:
+	case PresentationPodsSub:
 		return "presentation-pods", []interface{}{}
-	case UsersSettings:
+	case UsersSettingsSub:
 		return "users-settings", []interface{}{}
-	case GuestUser:
+	case GuestUserSub:
 		return "guest-user", []interface{}{}
-	case UsersInfos:
+	case UsersInfosSub:
 		return "users-infos", []interface{}{}
-	case MeetingTimeRemaining:
+	case MeetingTimeRemainingSub:
 		return "meeting-time-remaining", []interface{}{}
-	case LocalSettings:
+	case LocalSettingsSub:
 		return "local-settings", []interface{}{}
-	case UsersTyping:
+	case UsersTypingSub:
 		return "users-typing", []interface{}{}
-	case RecordMeetings:
+	case RecordMeetingsSub:
 		return "record-meetings", []interface{}{}
-	case VideoStreams:
+	case VideoStreamsSub:
 		return "video-streams", []interface{}{}
-	case ConnectionStatus:
+	case ConnectionStatusSub:
 		return "connection-status", []interface{}{}
-	case VoiceCallStates:
+	case VoiceCallStatesSub:
 		return "voice-call-states", []interface{}{}
-	case ExternalVideoMeetings:
+	case ExternalVideoMeetingsSub:
 		return "external-video-meetings", []interface{}{}
-	case Breakouts:
+	case BreakoutsSub:
 		return "breakouts", []interface{}{}
-	case BreakoutsHistory:
+	case BreakoutsHistorySub:
 		return "breakouts-history", []interface{}{}
-	case Pads:
+	case PadsSub:
 		return "pads", []interface{}{}
-	case PadsSessions:
+	case PadsSessionsSub:
 		return "pads-sessions", []interface{}{}
-	case PadsUpdates:
+	case PadsUpdatesSub:
 		return "pads-updates", []interface{}{}
-	case UsersPersistentData:
+	case UsersPersistentDataSub:
 		return "users-persistent-data", []interface{}{}
-	case StreamCursor:
+	case StreamCursorSub:
 		return "stream-cursor-INTERNALID", []interface{}{st} //BECAREFUL: The word INTERNALID must be replaced with the internal meeting id!!!
-	case StreamAnnotationsAdded:
+	case StreamAnnotationsAddedSub:
 		return "stream-annotations-INTERNALID", []interface{}{st} //BECAREFUL: The word INTERNALID must be replaced with the internal meeting id!!!
-	case StreamAnnotationsRemoved:
+	case StreamAnnotationsRemovedSub:
 		return "stream-annotations-INTERNALID", []interface{}{st} //BECAREFUL: The word INTERNALID must be replaced with the internal meeting id!!!
-	case GroupChatMsg:
+	case GroupChatMsgSub:
 		return "group-chat-msg", []interface{}{0}
-	case CurrentPoll:
+	case CurrentPollSub:
 		return "current-poll", []interface{}{false, true}
 	default:
 		return "", []interface{}{}
 	}
 }
-
