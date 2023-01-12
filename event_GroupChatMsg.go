@@ -5,8 +5,6 @@ import (
 	"errors"
 	"reflect"
 
-	convert "github.com/benpate/convert"
-
 	bbb "github.com/ITLab-CC/bigbluebutton-bot/bbb"
 )
 
@@ -43,23 +41,10 @@ func (c *Client) OnGroupChatMsg(listener groupChatMsgListener) error {
 // Will be emited by ddpClient
 func (e *event) CollectionUpdate(collection string, operation string, id string, doc ddp.Update) {
 
-	var msg bbb.Message
 	if doc == nil || doc["id"] == nil {
 		return
-	} else {
-		msg = bbb.Message{
-			ID:                 convert.String(doc["id"]),
-			Timestamp:          convert.Int64(doc["timestamp"]),
-			CorrelationID:      convert.String(doc["correlationId"]),
-			ChatEmphasizedText: convert.Bool(doc["chatEmphasizedText"]),
-			Message:            convert.String(doc["message"]),
-			Sender:             convert.String(doc["sender"]),
-			SenderName:         convert.String(doc["senderName"]),
-			SenderRole:         convert.String(doc["senderRole"]),
-			MeetingId:          convert.String(doc["meetingId"]),
-			ChatId:             convert.String(doc["chatId"]),
-		}
 	}
+	msg := bbb.ConvertInToMessage(doc)
 
 	e.client.updateGroupChatMsg(msg)
 }
