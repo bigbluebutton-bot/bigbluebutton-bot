@@ -69,7 +69,7 @@ func (c *Client) updateGroupChatMsg(msg bbb.Message) {
 }
 
 
-func (c *Client) SendChatMsg(message string, chatId string) bool {
+func (c *Client) SendChatMsg(message string, chatId string) error {
 	now := time.Now()
 	timestemp := convert.String(now.UnixNano())
 
@@ -85,9 +85,9 @@ func (c *Client) SendChatMsg(message string, chatId string) bool {
 	}
 
 	_, err := c.ddpClient.Call("sendGroupChatMsg", chatId, messageSend)
-	if err == nil {
-		return false
+	if err != nil {
+		return errors.New("could not send message: " + err.Error())
 	}
 
-	return true
+	return nil
 }
