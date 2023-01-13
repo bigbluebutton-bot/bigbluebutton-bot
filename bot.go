@@ -3,6 +3,7 @@ package bot
 import (
 	api "api"
 	"errors"
+	"net/http"
 	"time"
 
 	ddp "ddp"
@@ -56,9 +57,17 @@ type Client struct {
 	eventDDPHandler *eventDDPHandler
 
 	// after validateAuthToken there are the following informations
-	ConnectionID string `json:"connectionId"`
-	MeetingID    string `json:"meetingId"` // internal meetingID
-	UserID       string `json:"userId"`
+	// ConnectionID string `json:"connectionId"`
+	// MeetingID    string `json:"meetingId"` // internal meetingID
+	// UserID       string `json:"userId"`
+
+	// after join there are the following informations
+	JoinURL string
+	SessionCookie []*http.Cookie
+	InternalUserID string
+	AuthToken string
+	SessionToken string
+	InternalMeetingID string
 }
 
 func NewClient(clientURL string, clientWSURL string, apiURL string, apiSecret string) (*Client, error) {
@@ -94,7 +103,14 @@ func NewClient(clientURL string, clientWSURL string, apiURL string, apiSecret st
 
 // Join a meeting
 func (c *Client) Join(meetingID string, userName string, moderator bool) error {
-	_, _, internalUserID, authToken, _, internalMeetingID, err := c.API.Join(meetingID, userName, moderator)
+	joinURL, coockie, internalUserID, authToken, sessionToken, internalMeetingID, err := c.API.Join(meetingID, userName, moderator)
+	c.JoinURL = joinURL
+	c.SessionCookie = coockie
+	c.InternalUserID = internalUserID
+	c.AuthToken = authToken
+	c.SessionToken = sessionToken
+	c.InternalMeetingID = internalMeetingID
+
 	if err != nil {
 		return err
 	}

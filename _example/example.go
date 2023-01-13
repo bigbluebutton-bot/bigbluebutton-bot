@@ -146,7 +146,7 @@ func main() {
 
 		fmt.Println("[" + msg.SenderName + "]: " + msg.Message)
 
-		if(msg.Sender != client.UserID) {
+		if(msg.Sender != client.InternalUserID) {
 			if(msg.Message == "ping") {
 				fmt.Println("Sending pong")
 				client.SendChatMsg("pong", msg.ChatId)

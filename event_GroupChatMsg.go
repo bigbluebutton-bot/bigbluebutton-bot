@@ -64,9 +64,9 @@ func (c *Client) SendChatMsg(message string, chatId string) error {
 	timestemp := convert.String(now.UnixNano())
 
 	messageSend := bbb.MessageSend{
-		ID: c.UserID + timestemp[:len(timestemp)-(len(timestemp)-13)],
+		ID: c.InternalUserID + timestemp[:len(timestemp)-(len(timestemp)-13)],
 		Sender: bbb.MessageSendSender{
-			ID:   c.UserID,
+			ID:   c.InternalUserID,
 			Name: "",
 			Role: "",
 		},
