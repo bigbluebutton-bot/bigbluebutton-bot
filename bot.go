@@ -9,66 +9,84 @@ import (
 )
 
 type StatusType string
+
 const (
-	DISCONNECTING 	StatusType = "disconnecting"
-	DISCONNECTED 	StatusType = "disconnected"
-	CONNECTING   	StatusType = "connecting"
-	CONNECTED 		StatusType = "connected"
-	RECONNECTING 	StatusType = "reconnecting"
+	DISCONNECTING StatusType = "disconnecting"
+	DISCONNECTED  StatusType = "disconnected"
+	CONNECTING    StatusType = "connecting"
+	CONNECTED     StatusType = "connected"
+	RECONNECTING  StatusType = "reconnecting"
 )
 
 // This is for all events that are in "event_....go" files
-type event struct {
+type eventDDPHandler struct {
 	client *Client
 }
 
+// Will be emited by ddpClient
+func (e *eventDDPHandler) CollectionUpdate(collection string, operation string, id string, doc ddp.Update) {
+	// "redirect" to the event handler
+	switch collection {
+	case "group-chat-msg":
+		e.client.updateGroupChatMsg(collection, operation, id, doc)
+	default:
+		// do nothing
+		return
+	}
+}
 
 // Client represents a BigBlueButton client connection. The BigBlueButton client establish a BigBlueButton
 // session and acts as a message pump for other tools.
 type Client struct {
 	// Status is the current connection status of the client
-	Status 	StatusType
+	Status StatusType
 
 	// BBB-urls the client is connected to
-	ClientURL			string
-	ClientWSURL			string
-	ApiURL				string
-	apiSecret			string
+	ClientURL   string
+	ClientWSURL string
+	ApiURL      string
+	apiSecret   string
 	// to make api requests to the BBB-server
-	API 				*api.ApiRequest
+	API *api.ApiRequest
 
-	ddpClient 			*ddp.Client
+	ddpClient *ddp.Client
 
 	// events will store all the functions executed on certain events. (events["OnStatus"][]func(StatusType))
-	events 				map[string][]interface{}
+	events          map[string][]interface{}
+	eventDDPHandler *eventDDPHandler
 
 	// after validateAuthToken there are the following informations
-	ConnectionID 		string `json:"connectionId"`
-	MeetingID			string `json:"meetingId"` // internal meetingID
-	UserID 				string `json:"userId"`
+	ConnectionID string `json:"connectionId"`
+	MeetingID    string `json:"meetingId"` // internal meetingID
+	UserID       string `json:"userId"`
 }
 
 func NewClient(clientURL string, clientWSURL string, apiURL string, apiSecret string) (*Client, error) {
 	api, err := api.NewRequest(apiURL, apiSecret, api.SHA256)
-	if (err != nil) {
+	if err != nil {
 		return nil, err
 	}
-	
+
 	ddpClient := ddp.NewClient(clientWSURL, clientURL)
 
 	c := &Client{
-		Status: 	DISCONNECTED,
+		Status: DISCONNECTED,
 
-		ClientURL:			clientURL,
-		ClientWSURL:		clientWSURL,
-		ApiURL:				apiURL,
-		apiSecret:			apiSecret,
+		ClientURL:   clientURL,
+		ClientWSURL: clientWSURL,
+		ApiURL:      apiURL,
+		apiSecret:   apiSecret,
 
-		ddpClient:			ddpClient,
+		ddpClient: ddpClient,
 
-		API: 				api,
+		API: api,
 
-		events: 			make(map[string][]interface{}),
+		events:          make(map[string][]interface{}),
+		eventDDPHandler: nil,
+	}
+
+	c.eventDDPHandler = &eventDDPHandler{
+		client: c,
 	}
 
 	return c, nil
@@ -103,12 +121,12 @@ func (c *Client) Join(meetingID string, userName string, moderator bool) error {
 // Leave the joined meeting
 func (c *Client) Leave() error {
 	// If not connected, return an error
-	if(c.Status != CONNECTED) {
+	if c.Status != CONNECTED {
 		// If is connecting retry 5 times
-		if(c.Status == CONNECTING) {
+		if c.Status == CONNECTING {
 			i := 0
-			for(i < 5) {
-				if(c.Status == CONNECTED) {
+			for i < 5 {
+				if c.Status == CONNECTED {
 					c.Leave()
 				}
 				time.Sleep(time.Second * 1)

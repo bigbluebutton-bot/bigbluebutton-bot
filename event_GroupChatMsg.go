@@ -15,9 +15,6 @@ type groupChatMsgListener func(msg bbb.Message)
 // OnGroupChatMsg in order to receive GroupChatMsg changes.
 func (c *Client) OnGroupChatMsg(listener groupChatMsgListener) error {
 	if c.events["OnGroupChatMsg"] == nil {
-		e := &event{
-			client: c,
-		}
 
 		err := c.ddpClient.Sub("group-chat")
 		if err != nil {
@@ -32,7 +29,7 @@ func (c *Client) OnGroupChatMsg(listener groupChatMsgListener) error {
 
 		collection := c.ddpClient.CollectionByName("group-chat-msg")
 
-		collection.AddUpdateListener(e)
+		collection.AddUpdateListener(c.eventDDPHandler)
 	}
 
 	c.events["OnGroupChatMsg"] = append(c.events["OnGroupChatMsg"], listener)
@@ -40,19 +37,13 @@ func (c *Client) OnGroupChatMsg(listener groupChatMsgListener) error {
 	return nil
 }
 
-// Will be emited by ddpClient
-func (e *event) CollectionUpdate(collection string, operation string, id string, doc ddp.Update) {
-
+// informs all listeners with the new infos.
+func (c *Client) updateGroupChatMsg(collection string, operation string, id string, doc ddp.Update) {
 	if doc == nil || doc["id"] == nil {
 		return
 	}
 	msg := bbb.ConvertInToMessage(doc)
 
-	e.client.updateGroupChatMsg(msg)
-}
-
-// informs all listeners with the new infos.
-func (c *Client) updateGroupChatMsg(msg bbb.Message) {
 	// Inform all listeners
 	for _, event := range c.events["OnGroupChatMsg"] {
 
@@ -67,7 +58,6 @@ func (c *Client) updateGroupChatMsg(msg bbb.Message) {
 		}
 	}
 }
-
 
 func (c *Client) SendChatMsg(message string, chatId string) error {
 	now := time.Now()
