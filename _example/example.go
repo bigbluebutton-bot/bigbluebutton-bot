@@ -163,6 +163,10 @@ func main() {
 		panic(err)
 	}
 
+	err = client.CreateCapture("en")
+	if err != nil {
+		panic(err)
+	}
 
 	time.Sleep(2000 * time.Second)
 
