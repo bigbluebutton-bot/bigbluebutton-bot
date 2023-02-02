@@ -25,9 +25,15 @@ type configClient struct {
 	WS  string `json:"ws"`
 }
 
+type configPad struct {
+	URL string `json:"url"`
+	WS  string `json:"ws"`
+}
+
 type configBBB struct {
 	API    configAPI	`json:"api"`
 	Client configClient	`json:"client"`
+	Pad configPad		`json:"pad"`
 }
 
 type config struct {
@@ -119,7 +125,7 @@ func main() {
 	}
 	fmt.Println("Moderator join url: " + url)
 
-	time.Sleep(5 * time.Second)
+	time.Sleep(1 * time.Second)
 
 
 
@@ -127,7 +133,7 @@ func main() {
 
 
 
-	client, err := bot.NewClient(conf.BBB.Client.URL, conf.BBB.Client.WS, conf.BBB.API.URL, conf.BBB.API.Secret)
+	client, err := bot.NewClient(conf.BBB.Client.URL, conf.BBB.Client.WS, conf.BBB.Pad.URL, conf.BBB.Pad.WS, conf.BBB.API.URL, conf.BBB.API.Secret)
 	if err != nil {
 		panic(err)
 	}
@@ -158,7 +164,7 @@ func main() {
 	}
 
 
-	time.Sleep(20 * time.Second)
+	time.Sleep(2000 * time.Second)
 
 	fmt.Println("Bot leaves " + newmeeting.MeetingName)
 	err = client.Leave()

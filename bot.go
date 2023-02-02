@@ -45,6 +45,8 @@ type Client struct {
 	// BBB-urls the client is connected to
 	ClientURL   string
 	ClientWSURL string
+	PadURL   	string
+	PadWSURL 	string
 	ApiURL      string
 	apiSecret   string
 	// to make api requests to the BBB-server
@@ -62,15 +64,15 @@ type Client struct {
 	// UserID       string `json:"userId"`
 
 	// after join there are the following informations
-	JoinURL string
-	SessionCookie []*http.Cookie
-	InternalUserID string
-	AuthToken string
-	SessionToken string
+	JoinURL           string
+	SessionCookie     []*http.Cookie
+	InternalUserID    string
+	AuthToken         string
+	SessionToken      string
 	InternalMeetingID string
 }
 
-func NewClient(clientURL string, clientWSURL string, apiURL string, apiSecret string) (*Client, error) {
+func NewClient(clientURL string, clientWSURL string, padURL string, padWSURL string, apiURL string, apiSecret string) (*Client, error) {
 	api, err := api.NewRequest(apiURL, apiSecret, api.SHA256)
 	if err != nil {
 		return nil, err
@@ -83,6 +85,8 @@ func NewClient(clientURL string, clientWSURL string, apiURL string, apiSecret st
 
 		ClientURL:   clientURL,
 		ClientWSURL: clientWSURL,
+		PadURL:   	 padURL,
+		PadWSURL: 	 padWSURL,
 		ApiURL:      apiURL,
 		apiSecret:   apiSecret,
 
