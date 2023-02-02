@@ -1,3 +1,6 @@
 [submodule "ddp-go"]
 	path = ddp-go
 	url = https://github.com/JulianKropp/ddp-go
+[submodule "go-socket.io-client"]
+	path = go-socket.io-client
+	url = https://github.com/ITLab-CC/go-socket.io-client
