@@ -47,16 +47,22 @@ func readConfig(file string) config {
 			API: configAPI{
 				URL: os.Getenv("BBB_API_URL"),
 				Secret: os.Getenv("BBB_API_SECRET"),
-				SHA: api.SHA(os.Getenv("BBB_API_SECRET")),
+				SHA: api.SHA(os.Getenv("BBB_API_SHA")),
 			},
 			Client: configClient{
 				URL: os.Getenv("BBB_CLIENT_URL"),
 				WS: os.Getenv("BBB_CLIENT_WS"),
 			},
+			Pad: configPad{
+				URL: os.Getenv("BBB_PAD_URL"),
+				WS: os.Getenv("BBB_PAD_WS"),
+			},
 		},
 	}
 
-	if (conf.BBB.API.URL != "" && conf.BBB.API.Secret != "" && conf.BBB.API.SHA != "" && conf.BBB.Client.URL != "" && conf.BBB.Client.WS != ""){
+	if (conf.BBB.API.URL != "" && conf.BBB.API.Secret != "" && conf.BBB.API.SHA != "" &&
+		conf.BBB.Client.URL != "" && conf.BBB.Client.WS != "" &&
+		conf.BBB.Pad.URL != "" && conf.BBB.Pad.WS != ""){
 		fmt.Println("Using env variables for config")
 		return conf
 	}
