@@ -4,3 +4,6 @@
 [submodule "go-socket.io-client"]
 	path = go-socket.io-client
 	url = https://github.com/ITLab-CC/go-socket.io-client
+[submodule "golang-socketio"]
+	path = golang-socketio
+	url = https://github.com/JulianKropp/golang-socketio
