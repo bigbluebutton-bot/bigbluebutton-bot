@@ -7,15 +7,20 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/http/cookiejar"
+	"net/url"
 	"time"
 
 	// "reflect"
 
 	// bbb "github.com/ITLab-CC/bigbluebutton-bot/bbb"
 	// "bufio"
-	// socketio "github.com/zhouhui8915/go-socket.io-client"
+	// socketio_client "go-socket.io-client"
 	// "log"
 	// "os"
+	goSocketio "github.com/graarh/golang-socketio"
+	goSocketioTransport "github.com/graarh/golang-socketio/transport"
+	"golang.org/x/net/publicsuffix"
 )
 
 func getCookieByName(cookies []*http.Cookie, name string) string {
@@ -102,7 +107,7 @@ func(c *Client) CreateCapture(language string) error {
 
 	httpclient := new(http.Client)
 	//"https://example.com/pad/auth_session?padName="+padId+"&sessionID=s.42e1ba9a2c46a7d587d8b5896b625080&lang=en&rtl=false&sessionToken=fqicxhxpidc3hyiz"
-	hash := md5.Sum([]byte(padId))
+	hash := md5.Sum([]byte(padId + time.Now().String()))
 	sessionID := hex.EncodeToString(hash[:]) // The sessionID looks like a MD5 hash, but I dont know
 	req, _ := http.NewRequest("GET", c.PadURL + "auth_session?padName=" + padId + "&sessionID=s." + sessionID + "&lang=en&rtl=false&sessionToken="+c.SessionToken, nil)
 	for _, cookie := range c.SessionCookie {
@@ -303,25 +308,25 @@ func(c *Client) CreateCapture(language string) error {
 
 	// socketclient.Connect()
 
-	// // socketclient.Emit("message", "2probe")
-	// // socketclient.Emit("message", "5")
-	// time.Sleep(1 * time.Second)
+	// socketclient.Emit("message", "2probe")
+	// socketclient.Emit("message", "5")
+	time.Sleep(1 * time.Second)
 
-	// type padCurserLocationData struct {
-	// 	Type       string `json:"type"`
-	// 	Action     string `json:"action"`
-	// 	LocationY  int    `json:"locationY"`
-	// 	LocationX  int    `json:"locationX"`
-	// 	PadID      string `json:"padId"`
-	// 	MyAuthorID string `json:"myAuthorId"`
-	// }
-	// type padCurserLocation struct {
-	// 	Type      string                `json:"type"`
-	// 	Component string                `json:"component"`
-	// 	Data      padCurserLocationData `json:"data"`
-	// }
+	type padCurserLocationData struct {
+		Type       string `json:"type"`
+		Action     string `json:"action"`
+		LocationY  int    `json:"locationY"`
+		LocationX  int    `json:"locationX"`
+		PadID      string `json:"padId"`
+		MyAuthorID string `json:"myAuthorId"`
+	}
+	type padCurserLocation struct {
+		Type      string                `json:"type"`
+		Component string                `json:"component"`
+		Data      padCurserLocationData `json:"data"`
+	}
 
-	// //42["message",{"type":"COLLABROOM","component":"pad","data":{"type":"cursor","action":"cursorPosition","locationY":0,"locationX":1,"padId":"g.m5RsJO1Z7Rl7shlu$en","myAuthorId":"a.jV6yISPJv9ZOa9kf"}}]
+	commandCurser := `{"type":"COLLABROOM","component":"pad","data":{"type":"cursor","action":"cursorPosition","locationY":0,"locationX":1,"padId":"g.m5RsJO1Z7Rl7shlu$en","myAuthorId":"a.jV6yISPJv9ZOa9kf"}}`
 	// commandCurser := padCurserLocation {
 	// 	Type: "COLLABROOM",
 	// 	Component: "pad",
@@ -334,24 +339,24 @@ func(c *Client) CreateCapture(language string) error {
 	// 		MyAuthorID: "a.jV6yISPJv9ZOa9kf",
 	// 	},
 	// }
-	// // commandCurser := `{
-	// // 	"type":"COLLABROOM",
-	// // 	"component":"pad",
-	// // 	"data":{
-	// // 	   "type":"USER_CHANGES",
-	// // 	   "baseRev":0,
-	// // 	   "changeset":"Z:1>1*0+1$h",
-	// // 	   "apool":{
-	// // 		  "numToAttrib":{
-	// // 			 "0":[
-	// // 				"author",
-	// // 				"a.jV6yISPJv9ZOa9kf"
-	// // 			 ]
-	// // 		  },
-	// // 		  "nextNum":1
-	// // 	   }
-	// // 	}
-	// //  }`
+	// commandCurser := `{
+	// 	"type":"COLLABROOM",
+	// 	"component":"pad",
+	// 	"data":{
+	// 	   "type":"USER_CHANGES",
+	// 	   "baseRev":0,
+	// 	   "changeset":"Z:1>1*0+1$h",
+	// 	   "apool":{
+	// 		  "numToAttrib":{
+	// 			 "0":[
+	// 				"author",
+	// 				"a.jV6yISPJv9ZOa9kf"
+	// 			 ]
+	// 		  },
+	// 		  "nextNum":1
+	// 	   }
+	// 	}
+	//  }`
 	// err = socketclient.Emit("message", commandCurser)
 	// if err != nil {
 	// 	panic(err)
@@ -360,23 +365,23 @@ func(c *Client) CreateCapture(language string) error {
 
 
 
-	// type padTypingDataApool struct {
-	// 	NumToAttrib map[string][]string `json:"numToAttrib"`
-	// 	NextNum     int                 `json:"nextNum"`
-	// }
-	// type padTypingData struct {
-	// 	Type      string             `json:"type"`
-	// 	BaseRev   int                `json:"baseRev"`
-	// 	Changeset string             `json:"changeset"`
-	// 	Apool     padTypingDataApool `json:"apool"`
-	// }
-	// type padTyping struct {
-	// 	Type      string        `json:"type"`
-	// 	Component string        `json:"component"`
-	// 	Data      padTypingData `json:"data"`
-	// }
+	type padTypingDataApool struct {
+		NumToAttrib map[string][]string `json:"numToAttrib"`
+		NextNum     int                 `json:"nextNum"`
+	}
+	type padTypingData struct {
+		Type      string             `json:"type"`
+		BaseRev   int                `json:"baseRev"`
+		Changeset string             `json:"changeset"`
+		Apool     padTypingDataApool `json:"apool"`
+	}
+	type padTyping struct {
+		Type      string        `json:"type"`
+		Component string        `json:"component"`
+		Data      padTypingData `json:"data"`
+	}
 
-	// //42["message",{"type":"COLLABROOM","component":"pad","data":{"type":"USER_CHANGES","baseRev":0,"changeset":"Z:1>1*0+1$h","apool":{"numToAttrib":{"0":["author","a.jV6yISPJv9ZOa9kf"]},"nextNum":1}}}]
+	commandTyping := `{"type":"COLLABROOM","component":"pad","data":{"type":"USER_CHANGES","baseRev":0,"changeset":"Z:1>1*0+1$h","apool":{"numToAttrib":{"0":["author","a.jV6yISPJv9ZOa9kf"]},"nextNum":1}}}`
 	// commandTyping := padTyping {
 	// 	Type: "COLLABROOM",
 	// 	Component: "pad",
@@ -398,16 +403,53 @@ func(c *Client) CreateCapture(language string) error {
 	// }
 
 
-	// // command := `{"type":"COLLABROOM","component":"pad","data":{"type":"cursor","action":"cursorPosition","locationY":0,"locationX":0,"padId":"` + padId + `","myAuthorId":"a.oj3x18fQdseyxqNG"}}`
-	// // socketclient.Emit("message", command)
+	// command := `{"type":"COLLABROOM","component":"pad","data":{"type":"cursor","action":"cursorPosition","locationY":0,"locationX":0,"padId":"` + padId + `","myAuthorId":"a.oj3x18fQdseyxqNG"}}`
+	// socketclient.Emit("message", command)
 
-	// // command = `{"type":"COLLABROOM","component":"pad","data":{"type":"cursor","action":"cursorPosition","locationY":0,"locationX":1,"padId":"` + padId + `","myAuthorId":"a.oj3x18fQdseyxqNG"}}`
-	// // socketclient.Emit("message", command)
+	// command = `{"type":"COLLABROOM","component":"pad","data":{"type":"cursor","action":"cursorPosition","locationY":0,"locationX":1,"padId":"` + padId + `","myAuthorId":"a.oj3x18fQdseyxqNG"}}`
+	// socketclient.Emit("message", command)
 
-	// // command = `{"type":"COLLABROOM","component":"pad","data":{"type":"USER_CHANGES","baseRev":0,"changeset":"Z:1>1*0+1$h","apool":{"numToAttrib":{"0":["author","a.oj3x18fQdseyxqNG"]},"nextNum":1}}}`
-	// // socketclient.Emit("message", command)
+	// command = `{"type":"COLLABROOM","component":"pad","data":{"type":"USER_CHANGES","baseRev":0,"changeset":"Z:1>1*0+1$h","apool":{"numToAttrib":{"0":["author","a.oj3x18fQdseyxqNG"]},"nextNum":1}}}`
+	// socketclient.Emit("message", command)
 
 
+	uri := c.PadWSURL + "socket.io/?sessionToken=" + c.SessionToken + "&padId=" + padId + "&EIO=3&transport=websocket"
+
+	transp := goSocketioTransport.GetDefaultWebsocketTransport()
+
+	jar, _ := cookiejar.New(&cookiejar.Options{PublicSuffixList: publicsuffix.List})
+
+	ur, _:=  url.Parse(c.PadURL)
+	jar.SetCookies(ur, c.SessionCookie)
+
+	transp.Cookie = jar
+
+	client, err := goSocketio.Dial(
+		uri,
+		transp)
+	if err != nil {
+		return err
+	} else {
+		fmt.Println("Connected")
+	}
+
+	err = client.On(goSocketio.OnDisconnection, func(h *goSocketio.Channel) {
+		fmt.Println("Disconnected")
+	})
+	if err != nil {
+		return err
+	}
+
+	err = client.On(goSocketio.OnConnection, func(h *goSocketio.Channel) {
+		fmt.Println("Connected")
+	})
+	if err != nil {
+		return err
+	}
+
+	// client.Emit("event", "hello")
+	client.Emit("event", commandCurser)
+	client.Emit("event", commandTyping)
 
 	return nil
 }
