@@ -1,26 +1,19 @@
 package bot
 
 import (
-	"crypto/md5"
-	"encoding/hex"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
 	"net/http"
 	"net/http/cookiejar"
 	"net/url"
+	"reflect"
 	"time"
-
-	// "reflect"
-
-	// bbb "github.com/ITLab-CC/bigbluebutton-bot/bbb"
-	// "bufio"
-	// socketio_client "go-socket.io-client"
-	// "log"
-	// "os"
 	goSocketio "github.com/graarh/golang-socketio"
 	goSocketioTransport "github.com/graarh/golang-socketio/transport"
 	"golang.org/x/net/publicsuffix"
+	convert "github.com/benpate/convert"
 )
 
 func getCookieByName(cookies []*http.Cookie, name string) string {
@@ -76,7 +69,7 @@ func(c *Client) CreateCapture(language string) error {
 		return errors.New("could not call createSession: " + err.Error())
 	}
 
-
+	//Get padID
 	var padId string
 	getPadIDtry := 0
 	for {
@@ -97,19 +90,50 @@ func(c *Client) CreateCapture(language string) error {
 		padId = result.(string)
 		break
 	}
-	fmt.Println(padId)
+	fmt.Println("padID: " + padId)
 
-	time.Sleep(2 * time.Second)
+	//Get sessionID
+	var sessionID string
+	getsessionIDtry := 0
+	loop := true
+	for loop {
+		getsessionIDtry++
+		result := padsSessionsCollection.FindAll()
 
-	// fmt.Println(captionsCollection.FindAll())
-	// fmt.Println(padsCollection.FindAll())
-	// fmt.Println(padsSessionsCollection.FindAll())
+		for _, element0 := range result {
+			if element1, found := element0["sessions"]; found {
+				if reflect.TypeOf(element1).Kind() == reflect.Slice {
+					s := reflect.ValueOf(element1)
+					for i := 0; i < s.Len(); i++ {
+						element2 := s.Index(i)
+						if element2.Kind() == reflect.Interface { //is Interface
+							element3 := reflect.ValueOf(element2.Interface())
+							if element3.Kind() == reflect.Map {
+								for _, e := range element3.MapKeys() {
+									element4 := element3.MapIndex(e)
+									if convert.String(e) == "en" {
+										sessionID = convert.String(element4)
+										loop = false
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+		time.Sleep(100 * time.Millisecond)
+
+		if getsessionIDtry > 100 {
+			return errors.New("timeout to get sessionID")
+		}
+	}
+	fmt.Println("sessionID: " + sessionID)
+
 
 	httpclient := new(http.Client)
-	//"https://example.com/pad/auth_session?padName="+padId+"&sessionID=s.42e1ba9a2c46a7d587d8b5896b625080&lang=en&rtl=false&sessionToken=fqicxhxpidc3hyiz"
-	hash := md5.Sum([]byte(padId + time.Now().String()))
-	sessionID := hex.EncodeToString(hash[:]) // The sessionID looks like a MD5 hash, but I dont know
-	req, _ := http.NewRequest("GET", c.PadURL + "auth_session?padName=" + padId + "&sessionID=s." + sessionID + "&lang=en&rtl=false&sessionToken="+c.SessionToken, nil)
+	//"https://example.com/pad/auth_session?padName="+padId+"&sessionID="+sessionID+"&lang=en&rtl=false&sessionToken="+c.SessionToken
+	req, _ := http.NewRequest("GET", c.PadURL + "auth_session?padName=" + padId + "&sessionID=" + sessionID + "&lang=en&rtl=false&sessionToken="+c.SessionToken, nil)
 	for _, cookie := range c.SessionCookie {
 		req.AddCookie(cookie)
 	}
@@ -126,11 +150,9 @@ func(c *Client) CreateCapture(language string) error {
 	if err != nil {
 		return err
 	}
-	c.SessionCookie = append(c.SessionCookie, &http.Cookie{Name: "sessionID", Value: "s." + sessionID}) //add sessionID cookies
+	c.SessionCookie = append(c.SessionCookie, &http.Cookie{Name: "sessionID", Value: sessionID}) //add sessionID cookies
 
-	time.Sleep(2 * time.Second)
-	fmt.Println(padsSessionsCollection.FindAll())
-
+	// time.Sleep(2 * time.Second)
 
 
 
@@ -142,191 +164,21 @@ func(c *Client) CreateCapture(language string) error {
 
 
 
-
-
-
-
-
-
-
-	// //Make a http get request to the BigBlueButton API
-	// httpclient = new(http.Client)
-	// req, _ = http.NewRequest("GET", c.PadURL + "socket.io/?sessionToken="+c.SessionToken+"&padId="+padId+"&EIO=3&transport=polling", nil)
-	// for _, cookie := range c.SessionCookie {
-	// 	req.AddCookie(cookie)
+	// type padCurserLocationData struct {
+	// 	Type       string `json:"type"`
+	// 	Action     string `json:"action"`
+	// 	LocationY  int    `json:"locationY"`
+	// 	LocationX  int    `json:"locationX"`
+	// 	PadID      string `json:"padId"`
+	// 	MyAuthorID string `json:"myAuthorId"`
 	// }
-	// resp, err = httpclient.Do(req) //send request
-	// if err != nil {
-	// 	return err
-	// }
-	// if resp.StatusCode != 200 {
-	// 	return errors.New("Server returned: " + resp.Status)
+	// type padCurserLocation struct {
+	// 	Type      string                `json:"type"`
+	// 	Component string                `json:"component"`
+	// 	Data      padCurserLocationData `json:"data"`
 	// }
 
-	// defer resp.Body.Close()
-	// body, err = io.ReadAll(resp.Body)
-	// if err != nil {
-	// 	return err
-	// }
-
-	// type connection struct {
-	// 	Sid          string   `json:"sid"`
-	// 	Upgrades     []string `json:"upgrades"`
-	// 	PingInterval int      `json:"pingInterval"`
-	// 	PingTimeout  int      `json:"pingTimeout"`
-	// }
-
-	// //Unmarshal xml
-	// body = body[4:]
-	// //fmt.Println(body)
-	// var response connection
-	// err = json.Unmarshal(body, &response)
-	// if err != nil {
-	// 	return err
-	// }
-	// sid := response.Sid
-	// fmt.Println(sid)
-
-
-	// //--------------------------------------------------------------
-
-
-	// httpclient = new(http.Client)
-	// req, _ = http.NewRequest("GET", c.PadURL + "socket.io/?sessionToken="+c.SessionToken+"&padId="+padId+"&EIO=3&transport=polling&sid=" + sid, nil)
-	// for _, cookie := range c.SessionCookie {
-	// 	req.AddCookie(cookie)
-	// }
-	// resp, err = httpclient.Do(req) //send request
-	// if err != nil {
-	// 	return err
-	// }
-	// if resp.StatusCode != 200 {
-	// 	return errors.New("Server returned: " + resp.Status)
-	// }
-
-	// defer resp.Body.Close()
-	// body, err = io.ReadAll(resp.Body)
-	// if err != nil {
-	// 	return err
-	// }
-	// token := resp.Cookies()
-	// c.SessionCookie = append(c.SessionCookie, &http.Cookie{Name: "token", Value: getCookieByName(token, "token")}) //add sessionID cookies
-	// fmt.Println(string(body))
-
-	// //--------------------------------------------------------------
-	// //212:42["message",{"component":"pad","type":"CLIENT_READY","padId":"g.9d4O2LRqTkIfh6bM$notes","sessionID":"s.4918c0b0b9b7913b5e29334a50f58212","token":"t.oNTJCeHhA5x2lI9rM5st","userInfo":{"colorId":null,"name":null}}]
-	// PostData := strings.NewReader(`244:42["message",{"component":"pad","type":"CLIENT_READY","padId":"`+padId+`","sessionID":"`+getCookieByName(c.SessionCookie, "sessionID")+`","token":"`+getCookieByName(c.SessionCookie, "token")+`","userInfo":{"colorId":null,"name":null}}]`)
-
-	// httpclient = new(http.Client)
-	// req, _ = http.NewRequest("POST", c.PadURL + "socket.io/?sessionToken="+c.SessionToken+"&padId="+padId+"&EIO=3&transport=polling&sid=" + sid, PostData)
-	// for _, cookie := range c.SessionCookie {
-	// 	req.AddCookie(cookie)
-	// }
-	// resp, err = httpclient.Do(req) //send request
-	// if err != nil {
-	// 	return err
-	// }
-	// if resp.StatusCode != 200 {
-	// 	return errors.New("Server returned: " + resp.Status)
-	// }
-
-	// defer resp.Body.Close()
-	// body, err = io.ReadAll(resp.Body)
-	// if err != nil {
-	// 	return err
-	// }
-	// fmt.Println(string(body))
-
-	// //--------------------------------------------------------------
-
-	// httpclient = new(http.Client)
-	// req, _ = http.NewRequest("GET", c.PadURL + "socket.io/?sessionToken="+c.SessionToken+"&padId="+padId+"&EIO=3&transport=polling&sid=" + sid, nil)
-	// for _, cookie := range c.SessionCookie {
-	// 	req.AddCookie(cookie)
-	// 	fmt.Println(cookie)
-	// }
-	// resp, err = httpclient.Do(req) //send request
-	// if err != nil {
-	// 	return err
-	// }
-	// // if resp.StatusCode != 200 {
-	// // 	return errors.New("Server returned: " + resp.Status)
-	// // }
-
-	// defer resp.Body.Close()
-	// body, err = io.ReadAll(resp.Body)
-	// if err != nil {
-	// 	return err
-	// }
-	// fmt.Println(string(body))
-
-
-
-
-
-
-
-
-
-
-
-	// // uri := c.PadURL + "socket.io/?sessionToken=" + c.SessionToken + "&padId=" + padId + "&EIO=3&transport=websocket&sid=" + sid
-	// uri := c.PadURL + "socket.io/"
-
-	// opts := &socketio_client.Options{
-	// 	Transport: "websocket",
-	// 	// Query:     make(map[string]string),
-	// 	Query: map[string]string{
-	// 		"padId":        padId,
-	// 		"sessionToken": c.SessionToken,
-	// 		// "EIO": "3",
-	// 		// "transport": "websocket",
-	// 		// "sid": sid,
-	// 	},
-	// 	Cookies: c.SessionCookie,
-	// }
-
-	// socketclient, err := socketio_client.NewClient(uri, opts)
-	// if err != nil {
-	// 	fmt.Printf("NewClient error:%v\n", err)
-	// 	return err
-	// }
-
-	// socketclient.On("error", func() {
-	// 	fmt.Printf("on error\n")
-	// })
-	// socketclient.On("connection", func() {
-	// 	fmt.Printf("on connect\n")
-
-	// })
-	// socketclient.On("message", func(msg string) {
-	// 	fmt.Printf("on message:%v\n", msg)
-	// })
-	// socketclient.On("disconnection", func() {
-	// 	fmt.Printf("on disconnect\n")
-	// })
-
-	// socketclient.Connect()
-
-	// socketclient.Emit("message", "2probe")
-	// socketclient.Emit("message", "5")
-	time.Sleep(1 * time.Second)
-
-	type padCurserLocationData struct {
-		Type       string `json:"type"`
-		Action     string `json:"action"`
-		LocationY  int    `json:"locationY"`
-		LocationX  int    `json:"locationX"`
-		PadID      string `json:"padId"`
-		MyAuthorID string `json:"myAuthorId"`
-	}
-	type padCurserLocation struct {
-		Type      string                `json:"type"`
-		Component string                `json:"component"`
-		Data      padCurserLocationData `json:"data"`
-	}
-
-	commandCurser := `{"type":"COLLABROOM","component":"pad","data":{"type":"cursor","action":"cursorPosition","locationY":0,"locationX":1,"padId":"g.m5RsJO1Z7Rl7shlu$en","myAuthorId":"a.jV6yISPJv9ZOa9kf"}}`
+	// commandCurser := `{"type":"COLLABROOM","component":"pad","data":{"type":"cursor","action":"cursorPosition","locationY":0,"locationX":1,"padId":"g.m5RsJO1Z7Rl7shlu$en","myAuthorId":"a.jV6yISPJv9ZOa9kf"}}`
 	// commandCurser := padCurserLocation {
 	// 	Type: "COLLABROOM",
 	// 	Component: "pad",
@@ -357,60 +209,6 @@ func(c *Client) CreateCapture(language string) error {
 	// 	   }
 	// 	}
 	//  }`
-	// err = socketclient.Emit("message", commandCurser)
-	// if err != nil {
-	// 	panic(err)
-	// }
-
-
-
-
-	type padTypingDataApool struct {
-		NumToAttrib map[string][]string `json:"numToAttrib"`
-		NextNum     int                 `json:"nextNum"`
-	}
-	type padTypingData struct {
-		Type      string             `json:"type"`
-		BaseRev   int                `json:"baseRev"`
-		Changeset string             `json:"changeset"`
-		Apool     padTypingDataApool `json:"apool"`
-	}
-	type padTyping struct {
-		Type      string        `json:"type"`
-		Component string        `json:"component"`
-		Data      padTypingData `json:"data"`
-	}
-
-	commandTyping := `{"type":"COLLABROOM","component":"pad","data":{"type":"USER_CHANGES","baseRev":0,"changeset":"Z:1>1*0+1$h","apool":{"numToAttrib":{"0":["author","a.jV6yISPJv9ZOa9kf"]},"nextNum":1}}}`
-	// commandTyping := padTyping {
-	// 	Type: "COLLABROOM",
-	// 	Component: "pad",
-	// 	Data: padTypingData {
-	// 		Type: "USER_CHANGES",
-	// 		BaseRev: 0,
-	// 		Changeset: "Z:1>1*0+1$h",
-	// 		Apool: padTypingDataApool {
-	// 			NumToAttrib: map[string][]string {
-	// 				"0": []string{"author", "a.jV6yISPJv9ZOa9kf"},
-	// 			},
-	// 			NextNum: 1,
-	// 		},
-	// 	},
-	// }
-	// err = socketclient.Emit("message", commandTyping)
-	// if err != nil {
-	// 	panic(err)
-	// }
-
-
-	// command := `{"type":"COLLABROOM","component":"pad","data":{"type":"cursor","action":"cursorPosition","locationY":0,"locationX":0,"padId":"` + padId + `","myAuthorId":"a.oj3x18fQdseyxqNG"}}`
-	// socketclient.Emit("message", command)
-
-	// command = `{"type":"COLLABROOM","component":"pad","data":{"type":"cursor","action":"cursorPosition","locationY":0,"locationX":1,"padId":"` + padId + `","myAuthorId":"a.oj3x18fQdseyxqNG"}}`
-	// socketclient.Emit("message", command)
-
-	// command = `{"type":"COLLABROOM","component":"pad","data":{"type":"USER_CHANGES","baseRev":0,"changeset":"Z:1>1*0+1$h","apool":{"numToAttrib":{"0":["author","a.oj3x18fQdseyxqNG"]},"nextNum":1}}}`
-	// socketclient.Emit("message", command)
 
 
 	uri := c.PadWSURL + "socket.io/?sessionToken=" + c.SessionToken + "&padId=" + padId + "&EIO=3&transport=websocket"
@@ -424,14 +222,9 @@ func(c *Client) CreateCapture(language string) error {
 
 	transp.Cookie = jar
 
-	client, err := goSocketio.Dial(
-		uri,
-		transp)
-	if err != nil {
-		return err
-	} else {
-		fmt.Println("Connected")
-	}
+	client := goSocketio.NewClient()
+
+
 
 	err = client.On(goSocketio.OnDisconnection, func(h *goSocketio.Channel) {
 		fmt.Println("Disconnected")
@@ -442,14 +235,89 @@ func(c *Client) CreateCapture(language string) error {
 
 	err = client.On(goSocketio.OnConnection, func(h *goSocketio.Channel) {
 		fmt.Println("Connected")
+
+		time.Sleep(2 * time.Second)
+		//212:42["message",{"component":"pad","type":"CLIENT_READY","padId":"g.9d4O2LRqTkIfh6bM$notes","sessionID":"s.4918c0b0b9b7913b5e29334a50f58212","token":"t.oNTJCeHhA5x2lI9rM5st","userInfo":{"colorId":null,"name":null}}]
+		token := "t." + c.SessionToken //token can be anything. So we take the sessionToken
+		jsonStr := `{"component":"pad","type":"CLIENT_READY","padId":"`+padId+`","sessionID":"`+getCookieByName(c.SessionCookie, "sessionID")+`","token":"`+token+`","userInfo":{"colorId":null,"name":null}}`
+		type ClientReady struct {
+			Component string      `json:"component"`
+			Type      string      `json:"type"`
+			PadID     string      `json:"padId"`
+			SessionID string      `json:"sessionID"`
+			Token     string      `json:"token"`
+			UserInfo  interface{} `json:"userInfo"`
+		}
+		var cr ClientReady
+		err = json.Unmarshal([]byte(jsonStr), &cr)
+		if err != nil {
+			panic(err)
+		}
+		client.Emit("message", cr)
 	})
 	if err != nil {
 		return err
 	}
 
-	// client.Emit("event", "hello")
-	client.Emit("event", commandCurser)
-	client.Emit("event", commandTyping)
+	type clientReadyResponse struct {
+		Data struct {
+			UserID            string `json:"userId"`
+		} `json:"data"`
+	}
+
+	err = client.On("message", func(h *goSocketio.Channel, args clientReadyResponse) {
+		author := args.Data.UserID
+		fmt.Println("author:", author)
+
+
+		type padTypingDataApool struct {
+			NumToAttrib map[string][]string `json:"numToAttrib"`
+			NextNum     int                 `json:"nextNum"`
+		}
+		type padTypingData struct {
+			Type      string             `json:"type"`
+			BaseRev   int                `json:"baseRev"`
+			Changeset string             `json:"changeset"`
+			Apool     padTypingDataApool `json:"apool"`
+		}
+		type padTyping struct {
+			Type      string        `json:"type"`
+			Component string        `json:"component"`
+			Data      padTypingData `json:"data"`
+		}
+		commandTyping := padTyping {
+			Type: "COLLABROOM",
+			Component: "pad",
+			Data: padTypingData {
+				Type: "USER_CHANGES",
+				BaseRev: 0,
+				Changeset: "Z:1>1*0+1$h",
+				Apool: padTypingDataApool {
+					NumToAttrib: map[string][]string {
+						"0": []string{"author", author},
+					},
+					NextNum: 1,
+				},
+			},
+		}
+		client.Emit("message", commandTyping)
+
+
+	})
+	if err != nil {
+		return err
+	}
+
+	err = client.Dial(
+		uri,
+		transp)
+	if err != nil {
+		return err
+	} else {
+		fmt.Println("Connecting...")
+	}
+
+	//https://example.com/pad/api/1.2.14/appendText?apikey=JxkIWG6YFOmbT3xEmhDaG42K9cXUkqs0vh6BGPHi8ksMP3VjsTgvC9H2yTRkW&padID=g.jUdjji2zr14keg5Y$en&text=oh%20no
 
 	return nil
 }
