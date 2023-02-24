@@ -80,7 +80,7 @@ func NewClient(clientURL string, clientWSURL string, padURL string, padWSURL str
 
 	c.ddpEventHandler = &ddpEventHandler{
 		client:  c,
-		updater: make(map[string]updaterfunc),
+		updater: make(map[string][]updaterfunc),
 	}
 
 	return c, nil

@@ -49,7 +49,7 @@ func (c *Client) ddpCall(method bbb.CallType, params ...interface{}) (interface{
 type updaterfunc func(collection string, operation string, id string, doc ddp.Update)
 type ddpEventHandler struct {
 	client  *Client
-	updater map[string]updaterfunc
+	updater map[string][]updaterfunc
 }
 
 // Will be emited by ddpClient
@@ -57,9 +57,11 @@ func (e *ddpEventHandler) CollectionUpdate(collection string, operation string, 
 	fmt.Print("CollectionUpdate: " + collection + " " + operation + " " + id + " ")
 	fmt.Println(doc)
 	// "redirect" to the event handler
-	if f, found := e.updater[collection]; found {
-		if f != nil {
-			f(collection, operation, id, doc)
+	if flist, found := e.updater[collection]; found {
+		for _, f := range flist {
+			if f != nil {
+				f(collection, operation, id, doc)
+			}
 		}
 	}
 }
@@ -72,10 +74,9 @@ func (c *Client) ddpSubscribe(collectionName bbb.SubType, callbackUpdater update
 	if err != nil {
 		return errors.New("could not subscribe to " + subname + ": " + err.Error())
 	}
-
 	collection := c.ddpClient.CollectionByName(subname)  // get the ddp collection
 	collection.AddUpdateListener(c.ddpEventHandler)      // add the update listener of the ddp collection
-	c.ddpEventHandler.updater[subname] = callbackUpdater // add the update handler
+	c.ddpEventHandler.updater[subname] = append(c.ddpEventHandler.updater[subname], callbackUpdater) // add the update handler
 	return nil
 }
 
