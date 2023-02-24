@@ -10,10 +10,13 @@ import (
 	"net/url"
 	"reflect"
 	"time"
+
+	bbb "github.com/ITLab-CC/bigbluebutton-bot/bbb"
+
+	convert "github.com/benpate/convert"
 	goSocketio "github.com/graarh/golang-socketio"
 	goSocketioTransport "github.com/graarh/golang-socketio/transport"
 	"golang.org/x/net/publicsuffix"
-	convert "github.com/benpate/convert"
 )
 
 func getCookieByName(cookies []*http.Cookie, name string) string {
@@ -26,47 +29,43 @@ func getCookieByName(cookies []*http.Cookie, name string) string {
 	return result
 }
 
-func(c *Client) CreateCapture(language string) error {
+func (c *Client) CreateCapture(language string) error {
 	//Subscribe to captions, pads and pads-sessions
 	//Subscribe to captions
-	err := c.ddpClient.Sub("captions")
-	if err != nil {
-		return errors.New("could not subscribe to captions: " + err.Error())
+	if err := c.ddpSubscribe(bbb.CaptionsSub, nil); err != nil {
+		return err
 	}
 	captionsCollection := c.ddpClient.CollectionByName("captions")
-	captionsCollection.AddUpdateListener(c.eventDDPHandler)
+	captionsCollection.AddUpdateListener(c.ddpEventHandler)
 
 	//Subscribe to pads
-	err = c.ddpClient.Sub("pads")
-	if err != nil {
-		return errors.New("could not subscribe to pads: " + err.Error())
+	if err := c.ddpSubscribe(bbb.PadsSub, nil); err != nil {
+		return err
 	}
 	padsCollection := c.ddpClient.CollectionByName("pads")
-	padsCollection.AddUpdateListener(c.eventDDPHandler)
+	padsCollection.AddUpdateListener(c.ddpEventHandler)
 
 	//Subscribe to pads-sessions
-	err = c.ddpClient.Sub("pads-sessions")
-	if err != nil {
-		return errors.New("could not subscribe to group-chat: " + err.Error())
+	if err := c.ddpSubscribe(bbb.PadsSessionsSub, nil); err != nil {
+		return err
 	}
 	padsSessionsCollection := c.ddpClient.CollectionByName("pads-sessions")
-	padsSessionsCollection.AddUpdateListener(c.eventDDPHandler)
-
+	padsSessionsCollection.AddUpdateListener(c.ddpEventHandler)
 
 	//Create caption and add this bot as owner to it
-	_, err = c.ddpClient.Call("createGroup", "en", "captions", "English")
+	_, err := c.ddpCall(bbb.CreateGroupCall, "en", "captions", "English")
 	if err != nil {
-		return errors.New("could not call createGroup: " + err.Error())
+		return err
 	}
 
-	_, err = c.ddpClient.Call("updateCaptionsOwner", "en", "English")
+	_, err = c.ddpCall(bbb.UpdateCaptionsOwnerCall, "en", "English")
 	if err != nil {
-		return errors.New("could not call updateCaptionsOwner: " + err.Error())
+		return err
 	}
 
-	_, err = c.ddpClient.Call("createSession", "en")
+	_, err = c.ddpCall(bbb.CreateSessionCall, "en")
 	if err != nil {
-		return errors.New("could not call createSession: " + err.Error())
+		return err
 	}
 
 	//Get padID
@@ -74,9 +73,9 @@ func(c *Client) CreateCapture(language string) error {
 	getPadIDtry := 0
 	for {
 		getPadIDtry++
-		result, err := c.ddpClient.Call("getPadId", "en")
+		result, err := c.ddpCall(bbb.GetPadIdCall, "en")
 		if err != nil {
-			return errors.New("could not call getPadId: " + err.Error())
+			return err
 		}
 
 		if getPadIDtry > 10 {
@@ -130,10 +129,9 @@ func(c *Client) CreateCapture(language string) error {
 	}
 	fmt.Println("sessionID: " + sessionID)
 
-
 	httpclient := new(http.Client)
 	//"https://example.com/pad/auth_session?padName="+padId+"&sessionID="+sessionID+"&lang=en&rtl=false&sessionToken="+c.SessionToken
-	req, _ := http.NewRequest("GET", c.PadURL + "auth_session?padName=" + padId + "&sessionID=" + sessionID + "&lang=en&rtl=false&sessionToken="+c.SessionToken, nil)
+	req, _ := http.NewRequest("GET", c.PadURL+"auth_session?padName="+padId+"&sessionID="+sessionID+"&lang=en&rtl=false&sessionToken="+c.SessionToken, nil)
 	for _, cookie := range c.SessionCookie {
 		req.AddCookie(cookie)
 	}
@@ -153,16 +151,6 @@ func(c *Client) CreateCapture(language string) error {
 	c.SessionCookie = append(c.SessionCookie, &http.Cookie{Name: "sessionID", Value: sessionID}) //add sessionID cookies
 
 	// time.Sleep(2 * time.Second)
-
-
-
-
-
-
-
-
-
-
 
 	// type padCurserLocationData struct {
 	// 	Type       string `json:"type"`
@@ -210,21 +198,18 @@ func(c *Client) CreateCapture(language string) error {
 	// 	}
 	//  }`
 
-
 	uri := c.PadWSURL + "socket.io/?sessionToken=" + c.SessionToken + "&padId=" + padId + "&EIO=3&transport=websocket"
 
 	transp := goSocketioTransport.GetDefaultWebsocketTransport()
 
 	jar, _ := cookiejar.New(&cookiejar.Options{PublicSuffixList: publicsuffix.List})
 
-	ur, _:=  url.Parse(c.PadURL)
+	ur, _ := url.Parse(c.PadURL)
 	jar.SetCookies(ur, c.SessionCookie)
 
 	transp.Cookie = jar
 
 	client := goSocketio.NewClient()
-
-
 
 	err = client.On(goSocketio.OnDisconnection, func(h *goSocketio.Channel) {
 		fmt.Println("Disconnected")
@@ -239,7 +224,7 @@ func(c *Client) CreateCapture(language string) error {
 		time.Sleep(2 * time.Second)
 		//212:42["message",{"component":"pad","type":"CLIENT_READY","padId":"g.9d4O2LRqTkIfh6bM$notes","sessionID":"s.4918c0b0b9b7913b5e29334a50f58212","token":"t.oNTJCeHhA5x2lI9rM5st","userInfo":{"colorId":null,"name":null}}]
 		token := "t." + c.SessionToken //token can be anything. So we take the sessionToken
-		jsonStr := `{"component":"pad","type":"CLIENT_READY","padId":"`+padId+`","sessionID":"`+getCookieByName(c.SessionCookie, "sessionID")+`","token":"`+token+`","userInfo":{"colorId":null,"name":null}}`
+		jsonStr := `{"component":"pad","type":"CLIENT_READY","padId":"` + padId + `","sessionID":"` + getCookieByName(c.SessionCookie, "sessionID") + `","token":"` + token + `","userInfo":{"colorId":null,"name":null}}`
 		type ClientReady struct {
 			Component string      `json:"component"`
 			Type      string      `json:"type"`
@@ -261,14 +246,14 @@ func(c *Client) CreateCapture(language string) error {
 
 	type clientReadyResponse struct {
 		Data struct {
-			UserID            string `json:"userId"`
+			UserID string `json:"userId"`
 		} `json:"data"`
 	}
 
 	err = client.On("message", func(h *goSocketio.Channel, args clientReadyResponse) {
 		author := args.Data.UserID
 		fmt.Println("author:", author)
-
+		time.Sleep(2 * time.Second)
 
 		type padTypingDataApool struct {
 			NumToAttrib map[string][]string `json:"numToAttrib"`
@@ -285,15 +270,15 @@ func(c *Client) CreateCapture(language string) error {
 			Component string        `json:"component"`
 			Data      padTypingData `json:"data"`
 		}
-		commandTyping := padTyping {
-			Type: "COLLABROOM",
+		commandTyping := padTyping{
+			Type:      "COLLABROOM",
 			Component: "pad",
-			Data: padTypingData {
-				Type: "USER_CHANGES",
-				BaseRev: 0,
+			Data: padTypingData{
+				Type:      "USER_CHANGES",
+				BaseRev:   0,
 				Changeset: "Z:1>1*0+1$h",
-				Apool: padTypingDataApool {
-					NumToAttrib: map[string][]string {
+				Apool: padTypingDataApool{
+					NumToAttrib: map[string][]string{
 						"0": []string{"author", author},
 					},
 					NextNum: 1,
@@ -301,7 +286,6 @@ func(c *Client) CreateCapture(language string) error {
 			},
 		}
 		client.Emit("message", commandTyping)
-
 
 	})
 	if err != nil {
@@ -322,8 +306,6 @@ func(c *Client) CreateCapture(language string) error {
 	return nil
 }
 
-
-
 type captureListener func()
 
 // OnCapture in order to receive Capture changes.
@@ -331,7 +313,6 @@ func (c *Client) OnCapture(language string, listener captureListener) error {
 	if c.events["OnCapture"] == nil {
 		c.CreateCapture(language)
 	}
-	
 
 	c.events["OnCapture"] = append(c.events["OnCapture"], listener)
 

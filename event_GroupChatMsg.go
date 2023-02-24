@@ -16,20 +16,13 @@ type groupChatMsgListener func(msg bbb.Message)
 func (c *Client) OnGroupChatMsg(listener groupChatMsgListener) error {
 	if c.events["OnGroupChatMsg"] == nil {
 
-		err := c.ddpClient.Sub("group-chat")
-		if err != nil {
-			return errors.New("could not subscribe to group-chat: " + err.Error())
+		if err := c.ddpSubscribe(bbb.GroupChatSub, nil); err != nil {
+			return err
 		}
 
-		// subscribe to "group-chat-msg"
-		err = c.ddpClient.Sub("group-chat-msg", 0)
-		if err != nil {
-			return errors.New("could not subscribe to group-chat-msg: " + err.Error())
+		if err := c.ddpSubscribe(bbb.GroupChatMsgSub, c.updateGroupChatMsg); err != nil {
+			return err
 		}
-
-		collection := c.ddpClient.CollectionByName("group-chat-msg")
-
-		collection.AddUpdateListener(c.eventDDPHandler)
 	}
 
 	c.events["OnGroupChatMsg"] = append(c.events["OnGroupChatMsg"], listener)
@@ -74,7 +67,7 @@ func (c *Client) SendChatMsg(message string, chatId string) error {
 		Message:            message,
 	}
 
-	_, err := c.ddpClient.Call("sendGroupChatMsg", chatId, messageSend)
+	_, err := c.ddpCall(bbb.SendGroupChatMsgCall, chatId, messageSend)
 	if err != nil {
 		return errors.New("could not send message: " + err.Error())
 	}

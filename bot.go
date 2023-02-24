@@ -7,6 +7,8 @@ import (
 	"time"
 
 	ddp "ddp"
+
+	bbb "github.com/ITLab-CC/bigbluebutton-bot/bbb"
 )
 
 type StatusType string
@@ -19,23 +21,6 @@ const (
 	RECONNECTING  StatusType = "reconnecting"
 )
 
-// This is for all events that are in "event_....go" files
-type eventDDPHandler struct {
-	client *Client
-}
-
-// Will be emited by ddpClient
-func (e *eventDDPHandler) CollectionUpdate(collection string, operation string, id string, doc ddp.Update) {
-	// "redirect" to the event handler
-	switch collection {
-	case "group-chat-msg":
-		e.client.updateGroupChatMsg(collection, operation, id, doc)
-	default:
-		// do nothing
-		return
-	}
-}
-
 // Client represents a BigBlueButton client connection. The BigBlueButton client establish a BigBlueButton
 // session and acts as a message pump for other tools.
 type Client struct {
@@ -45,8 +30,8 @@ type Client struct {
 	// BBB-urls the client is connected to
 	ClientURL   string
 	ClientWSURL string
-	PadURL   	string
-	PadWSURL 	string
+	PadURL      string
+	PadWSURL    string
 	ApiURL      string
 	apiSecret   string
 	// to make api requests to the BBB-server
@@ -56,12 +41,7 @@ type Client struct {
 
 	// events will store all the functions executed on certain events. (events["OnStatus"][]func(StatusType))
 	events          map[string][]interface{}
-	eventDDPHandler *eventDDPHandler
-
-	// after validateAuthToken there are the following informations
-	// ConnectionID string `json:"connectionId"`
-	// MeetingID    string `json:"meetingId"` // internal meetingID
-	// UserID       string `json:"userId"`
+	ddpEventHandler *ddpEventHandler
 
 	// after join there are the following informations
 	JoinURL           string
@@ -85,8 +65,8 @@ func NewClient(clientURL string, clientWSURL string, padURL string, padWSURL str
 
 		ClientURL:   clientURL,
 		ClientWSURL: clientWSURL,
-		PadURL:   	 padURL,
-		PadWSURL: 	 padWSURL,
+		PadURL:      padURL,
+		PadWSURL:    padWSURL,
 		ApiURL:      apiURL,
 		apiSecret:   apiSecret,
 
@@ -95,11 +75,12 @@ func NewClient(clientURL string, clientWSURL string, padURL string, padWSURL str
 		API: api,
 
 		events:          make(map[string][]interface{}),
-		eventDDPHandler: nil,
+		ddpEventHandler: nil,
 	}
 
-	c.eventDDPHandler = &eventDDPHandler{
-		client: c,
+	c.ddpEventHandler = &ddpEventHandler{
+		client:  c,
+		updater: make(map[string]updaterfunc),
 	}
 
 	return c, nil
@@ -108,6 +89,9 @@ func NewClient(clientURL string, clientWSURL string, padURL string, padWSURL str
 // Join a meeting
 func (c *Client) Join(meetingID string, userName string, moderator bool) error {
 	joinURL, coockie, internalUserID, authToken, sessionToken, internalMeetingID, err := c.API.Join(meetingID, userName, moderator)
+	if err != nil {
+		return err
+	}
 	c.JoinURL = joinURL
 	c.SessionCookie = coockie
 	c.InternalUserID = internalUserID
@@ -115,22 +99,18 @@ func (c *Client) Join(meetingID string, userName string, moderator bool) error {
 	c.SessionToken = sessionToken
 	c.InternalMeetingID = internalMeetingID
 
-	if err != nil {
+	// Connect to the DDP server
+	if err = c.ddpConnect(); err != nil {
 		return err
 	}
 
-	err = c.ddpClient.Connect()
-	if err != nil {
+	// Subscribe to the current user
+	if err = c.ddpSubscribe(bbb.CurrentUser, nil); err != nil {
 		return err
-	}
-
-	err = c.ddpClient.Sub("current-user")
-	if err != nil {
-		return errors.New("could sub current-user")
 	}
 
 	// Call the validateAuthToken method with the userID, authToken, and userName
-	_, err = c.ddpClient.Call("validateAuthToken", internalMeetingID, internalUserID, authToken, internalUserID)
+	_, err = c.ddpCall(bbb.ValidateAuthTokenCall, internalMeetingID, internalUserID, authToken, internalUserID)
 	if err != nil {
 		return errors.New("could not validateAuthToken")
 	}
@@ -156,11 +136,11 @@ func (c *Client) Leave() error {
 		return errors.New("Client is in no meeting. First Join a meeting with: client.Join(meetingID string, userName string, moderator bool)")
 	}
 
-	c.ddpClient.Call("userLeftMeeting")
-	c.ddpClient.Call("setExitReason", "logout")
+	c.ddpCall(bbb.UserLeftMeetingCall)
+	c.ddpCall(bbb.SetExitReasonCall, "logout")
 	// c.ddpClient.UnSubscribe("from all subs")
 
-	c.ddpClient.Close()
+	c.ddpDisconnect()
 
 	c.ddpClient = nil
 

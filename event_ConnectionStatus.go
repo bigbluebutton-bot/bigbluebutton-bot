@@ -10,14 +10,14 @@ type statusListener func(StatusType)
 // OnStatus in order to receive status changes.
 func (c *Client) OnStatus(listener statusListener) {
 	if c.events["OnStatus"] == nil {
-		c.ddpClient.AddStatusListener(c.eventDDPHandler)
+		c.ddpClient.AddStatusListener(c.ddpEventHandler)
 	}
 
 	c.events["OnStatus"] = append(c.events["OnStatus"], listener)
 }
 
 // Will be emited by ddpClient
-func (e *eventDDPHandler) Status(status int) {
+func (e *ddpEventHandler) Status(status int) {
 	var st StatusType
 	switch status {
 	case ddp.DIALING:
