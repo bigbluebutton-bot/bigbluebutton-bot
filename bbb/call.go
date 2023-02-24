@@ -3,108 +3,108 @@ package bbb
 type CallType int
 
 const (
-	StreamCursor CallType = iota //BECAREFUL: The word INTERNALID must be replaced with the internal meeting id!!!
-	VoidConnection
-	StopUserTyping
-	SendGroupChatMsg
-	StartUserTyping
-	ChatMessageBeforeJoinCounter
-	UserChangedLocalSettings
-	ValidateAuthToken
-	GetPadId
-	CreateSession
-	UpdateCaptionsOwner
-	FetchMessagePerPage
-	UserShareWebcam
-	ZoomSlide
-	SwitchSlide
-	SetEmojiStatus
-	ToggleVoice
-	UserUnshareWebcam
-	SendBulkAnnotations
-	ClearWhiteboard
-	UndoAnnotation
-	AddGlobalAccess
-	MuteAllExceptPresenter
-	MuteAllUsers
-	ToggleWebcamsOnlyForModerator
-	ToggleLockSettings
-	ChangeGuestPolicy
-	EndAllBreakouts
-	CreateBreakoutRoom
-	CreateGroup
-	RemovePresentation
-	UserLeftMeeting
-	SetExitReason
+	StreamCursorCall CallType = iota //BECAREFUL: The word INTERNALID must be replaced with the internal meeting id!!!
+	VoidConnectionCall
+	StopUserTypingCall
+	SendGroupChatMsgCall
+	StartUserTypingCall
+	ChatMessageBeforeJoinCounterCall
+	UserChangedLocalSettingsCall
+	ValidateAuthTokenCall
+	GetPadIdCall
+	CreateSessionCall
+	UpdateCaptionsOwnerCall
+	FetchMessagePerPageCall
+	UserShareWebcamCall
+	ZoomSlideCall
+	SwitchSlideCall
+	SetEmojiStatusCall
+	ToggleVoiceCall
+	UserUnshareWebcamCall
+	SendBulkAnnotationsCall
+	ClearWhiteboardCall
+	UndoAnnotationCall
+	AddGlobalAccessCall
+	MuteAllExceptPresenterCall
+	MuteAllUsersCall
+	ToggleWebcamsOnlyForModeratorCall
+	ToggleLockSettingsCall
+	ChangeGuestPolicyCall
+	EndAllBreakoutsCall
+	CreateBreakoutRoomCall
+	CreateGroupCall
+	RemovePresentationCall
+	UserLeftMeetingCall
+	SetExitReasonCall
 )
 
 func GetCall(callName CallType) (string) {
 	switch callName {
-	case StreamCursor:
+	case StreamCursorCall:
 		return "stream-cursor-INTERNALID" //BECAREFUL: The word INTERNALID must be replaced with the internal meeting id!!!
-	case VoidConnection:
+	case VoidConnectionCall:
 		return "voidConnection"
-	case StopUserTyping:
+	case StopUserTypingCall:
 		return "stopUserTyping"
-	case SendGroupChatMsg:
+	case SendGroupChatMsgCall:
 		return "sendGroupChatMsg"
-	case StartUserTyping:
+	case StartUserTypingCall:
 		return "startUserTyping"
-	case ChatMessageBeforeJoinCounter:
+	case ChatMessageBeforeJoinCounterCall:
 		return "chatMessageBeforeJoinCounter"
-	case UserChangedLocalSettings:
+	case UserChangedLocalSettingsCall:
 		return "userChangedLocalSettings"
-	case ValidateAuthToken:
+	case ValidateAuthTokenCall:
 		return "validateAuthToken"
-	case GetPadId:
+	case GetPadIdCall:
 		return "getPadId"
-	case CreateSession:
+	case CreateSessionCall:
 		return "createSession"
-	case UpdateCaptionsOwner:
+	case UpdateCaptionsOwnerCall:
 		return "updateCaptionsOwner"
-	case FetchMessagePerPage:
+	case FetchMessagePerPageCall:
 		return "fetchMessagePerPage"
-	case UserShareWebcam:
+	case UserShareWebcamCall:
 		return "userShareWebcam"
-	case ZoomSlide:
+	case ZoomSlideCall:
 		return "zoomSlide"
-	case SwitchSlide:
+	case SwitchSlideCall:
 		return "switchSlide"
-	case SetEmojiStatus:
+	case SetEmojiStatusCall:
 		return "setEmojiStatus"
-	case ToggleVoice:
+	case ToggleVoiceCall:
 		return "toggleVoice"
-	case UserUnshareWebcam:
+	case UserUnshareWebcamCall:
 		return "userUnshareWebcam"
-	case SendBulkAnnotations:
+	case SendBulkAnnotationsCall:
 		return "sendBulkAnnotations"
-	case ClearWhiteboard:
+	case ClearWhiteboardCall:
 		return "clearWhiteboard"
-	case UndoAnnotation:
+	case UndoAnnotationCall:
 		return "undoAnnotation"
-	case AddGlobalAccess:
+	case AddGlobalAccessCall:
 		return "addGlobalAccess"
-	case MuteAllExceptPresenter:
+	case MuteAllExceptPresenterCall:
 		return "muteAllExceptPresenter"
-	case MuteAllUsers:
+	case MuteAllUsersCall:
 		return "muteAllUsers"
-	case ToggleWebcamsOnlyForModerator:
+	case ToggleWebcamsOnlyForModeratorCall:
 		return "toggleWebcamsOnlyForModerator"
-	case ToggleLockSettings:
+	case ToggleLockSettingsCall:
 		return "toggleLockSettings"
-	case ChangeGuestPolicy:
+	case ChangeGuestPolicyCall:
 		return "changeGuestPolicy"
-	case EndAllBreakouts:
+	case EndAllBreakoutsCall:
 		return "endAllBreakouts"
-	case CreateBreakoutRoom:
+	case CreateBreakoutRoomCall:
 		return "createBreakoutRoom"
-	case CreateGroup:
+	case CreateGroupCall:
 		return "createGroup"
-	case RemovePresentation:
+	case RemovePresentationCall:
 		return "removePresentation"
-	case UserLeftMeeting:
+	case UserLeftMeetingCall:
 		return "userLeftMeeting"
-	case SetExitReason:
+	case SetExitReasonCall:
 		return "setExitReason"
 	default:
 		return ""
