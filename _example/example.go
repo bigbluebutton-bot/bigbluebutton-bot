@@ -169,10 +169,14 @@ func main() {
 		panic(err)
 	}
 
-	err = client.CreateCapture("en")
+	enCapture, err := client.CreateCapture("en")
 	if err != nil {
 		panic(err)
 	}
+
+	time.Sleep(10 * time.Second)
+
+	enCapture.SendText("Hello World!")
 
 	time.Sleep(2000 * time.Second)
 
