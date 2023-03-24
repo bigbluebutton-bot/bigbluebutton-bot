@@ -174,9 +174,13 @@ func main() {
 		panic(err)
 	}
 
-	time.Sleep(10 * time.Second)
+	time.Sleep(2 * time.Second)
 
-	enCapture.SendText("Hello World!")
+	enCapture.SendText("Hello")
+
+	time.Sleep(2 * time.Second)
+
+	enCapture.SendText(" world")
 
 	time.Sleep(2000 * time.Second)
 

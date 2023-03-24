@@ -1,6 +1,7 @@
 package pad
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -9,6 +10,7 @@ import (
 	"net/url"
 	"strings"
 
+	convert "github.com/benpate/convert"
 	goSocketio "github.com/graarh/golang-socketio"
 	goSocketioTransport "github.com/graarh/golang-socketio/transport"
 	"golang.org/x/net/publicsuffix"
@@ -25,6 +27,8 @@ type Pad struct {
 	Client *goSocketio.Client
 
 	AuthorID string
+	Text     string
+	Attribs  string
 }
 
 // Create new pad
@@ -56,9 +60,9 @@ func NewPad(url string, wsURL string, sessionToken string, padId string, session
 		SessionID:    sessionID,
 		Cookie:       cookie,
 
-		Client: 	  nil,
+		Client: nil,
 
-		AuthorID: 	  "",
+		AuthorID: "",
 	}
 }
 
@@ -125,7 +129,7 @@ func (p *Pad) Connect() error {
 		return err
 	}
 	//On message
-	if err := p.Client.On("message", p.onMessage); err != nil {
+	if err := p.Client.On("message", p.onInitMessage); err != nil {
 		return err
 	}
 
@@ -139,6 +143,11 @@ func (p *Pad) Connect() error {
 		fmt.Println("Connecting...")
 	}
 	return nil
+}
+
+// Disconnect from the pad
+func (p *Pad) Disconnect() {
+	p.Client.Close()
 }
 
 func (p *Pad) onConnect(h *goSocketio.Channel) {
@@ -178,19 +187,114 @@ func (p *Pad) onDisconnect(h *goSocketio.Channel) {
 	fmt.Println("Disconnected")
 }
 
-type clientReadyResponse struct {
-	Data struct {
-		UserID string `json:"userId"`
-	} `json:"data"`
-}
-
-func (p *Pad) onMessage(h *goSocketio.Channel, args clientReadyResponse) {
+func (p *Pad) onInitMessage(h *goSocketio.Channel, args ReceveClientReady) {
 	if p.AuthorID == "" {
 		p.AuthorID = args.Data.UserID
+		p.Text = args.Data.CollabClientVars.InitialAttributedText.Text
+		p.Attribs = args.Data.CollabClientVars.InitialAttributedText.Attribs
 		fmt.Println("author:", p.AuthorID)
+		fmt.Println("text:", p.Text)
+		fmt.Println("attribs:", p.Attribs)
+
+		//Override onInitMessage with onMessage
+		p.Client.On("message", p.onMessage)
 	}
 }
 
+func (p *Pad) onMessage(h *goSocketio.Channel, mapData interface{}) {
+	fmt.Println(mapData)
+	// Convert map to json string
+	jsonStr, err := json.Marshal(mapData)
+	if err != nil {
+		return
+	}
+
+	// Disconnect if error/disconnect/accessStatus deny is returned
+	if strings.Contains(string(jsonStr), "disconnect") || strings.Contains(string(jsonStr), "accessStatus") {
+		p.Disconnect()
+		return
+	}
+
+	// Convert json string to struct
+	var datatype ReceveData
+	if err := json.Unmarshal(jsonStr, &datatype); err != nil {
+		return
+	}
+
+	// Switch datatype
+	fmt.Println(datatype.Data.Type)
+
+}
+
+/*
+A changeset describes the difference between two revisions of a document1. It has a format like this:
+
+Z:oldLen>diffLen*ops+charBank$
+
+where oldLen and diffLen are the lengths of the old and the difference between the old and new texts
+if the diference between oldLen and newLen is >= 0, then the operation betwenn oldLen and diffLen ist >
+else the operation betwenn oldLen and diffLen ist <
+diffLen will always be positive!
+
+ops are a series of operations to transform
+the old text into the new text, and charBank is a string of characters that are inserted by the operations1.
+
+The operations can be one of these types:
+
+=: keep a number of characters unchanged
+-: delete a number of characters
++: insert a number of characters from the charBank
+*: apply an attribute change to a number of characters
+Each operation has an optional parameter that specifies how many characters it affects. If omitted, it
+defaults to 11.
+
+For example, your changeset:
+
+Z:1>1*0+1$h
+
+means that you start with a text of length 1,
+end with a text of length 1,
+apply an attribute change (*0) to 1 character (the default),
+and insert 1 character (+1) from the charBank (h).
+The result is that you replace whatever character was there before with an h with some attribute.
+*/
+func generateChangeset(oldText *string, newText string) string {
+	oldLen := len(*oldText)
+	newTextLen := len(newText)
+	opCode := ""
+	newLen := oldLen + newTextLen
+
+	if oldLen != 0 {
+		if (*oldText)[oldLen-1] == '\n' {
+			if oldLen-1 > 0 {
+				opCode += "=" + convert.String(oldLen-1)
+			}
+			newLen -= 1
+		} else {
+			opCode += "=" + convert.String(oldLen)
+		}
+	}
+	opCode += "*0"
+
+	opCode += "+" + convert.String(newTextLen)
+
+
+	opDiff := ">"
+
+	diff := newTextLen
+
+	*oldText = strings.Replace(*oldText, "\n", "", -1) + newText + "\n"
+
+	result := "Z:" +
+		convert.String(oldLen) + //number: old legth
+		convert.String(opDiff) + //char: > or <
+		convert.String(diff) + //number: diffence between old and new length
+		convert.String(opCode) + //string: =, -, +, * and number
+		"$" +
+		convert.String(newText) //string: new text
+
+	return result
+}
 
 func (p *Pad) SendText(text string) error {
 	type padTypingDataApool struct {
@@ -208,13 +312,17 @@ func (p *Pad) SendText(text string) error {
 		Component string        `json:"component"`
 		Data      padTypingData `json:"data"`
 	}
+
+	changeset := generateChangeset(&p.Text, text)
+	fmt.Println(changeset)
+
 	commandTyping := padTyping{
 		Type:      "COLLABROOM",
 		Component: "pad",
 		Data: padTypingData{
 			Type:      "USER_CHANGES",
 			BaseRev:   0,
-			Changeset: "Z:1>1*0+1$g",
+			Changeset: changeset, //"Z:1>1*0+1$g",
 			Apool: padTypingDataApool{
 				NumToAttrib: map[string][]string{
 					"0": {"author", p.AuthorID},
@@ -223,5 +331,8 @@ func (p *Pad) SendText(text string) error {
 			},
 		},
 	}
-	return p.Client.Emit("message", commandTyping)
+	p.Client.Emit("message", commandTyping)
+
+
+	return nil
 }

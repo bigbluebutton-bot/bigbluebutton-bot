@@ -1,5 +1,21 @@
 package pad
 
+// Initial response from the server
+type ReceveClientReady struct {
+	Data struct {
+		UserID string `json:"userId"`
+		CollabClientVars struct {
+			InitialAttributedText struct {
+				Text    string `json:"text"`
+				Attribs string `json:"attribs"`
+			} `json:"initialAttributedText"`
+			//...
+		} `json:"collab_client_vars"`
+		//...
+	} `json:"data"`
+}
+
+
 // Server will send data which has a Type. To get the type use ReceveData.Data.Type
 // {"type":"COLLABROOM","data":{"type":"ACCEPT_COMMIT",...}}
 type ReceveData struct {
