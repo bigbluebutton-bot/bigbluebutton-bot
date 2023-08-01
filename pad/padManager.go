@@ -289,19 +289,21 @@ type padTyping struct {
 
 func (p *Pad) SendText(text string) error {
 
+	newtext := strings.ReplaceAll(p.Text, "\n", "") + text
+	oldtext := strings.ReplaceAll(p.Text, "\n", "") + "\n"
 
-    fmt.Println("Old text: ", p.Text)
-	fmt.Println("New text: ", text)
+    fmt.Println("Old text: ", oldtext)
+	fmt.Println("New text: ", newtext)
 
     // changeset := generateChangeset(p.Text, text)
-	changeset, err := p.ChangesetClient.GenerateChangeset(p.Text, text, p.Attribs)
+	changeset, err := p.ChangesetClient.GenerateChangeset(oldtext, newtext, p.Attribs)
 	if err != nil {
 		return err
 	}
 
     fmt.Println("Generated changeset: ", changeset)
 
-	p.Text = text
+	p.Text = strings.ReplaceAll(p.Text, "\n", "") + text
 	// "Z:1>5*0+5$Hello"
 	// "Z:1>4|+4$ello"
 	// "Z:1>5|=1+5$Hello"
@@ -340,6 +342,12 @@ func (p *Pad) SendText(text string) error {
 			},
 		},
 	}
+	// conver commandTyping to json
+	jsonmsg, err := json.Marshal(commandTyping)
+	if err == nil {
+		fmt.Println(string(jsonmsg))
+	}
+
 	err = p.Client.Emit("message", commandTyping)
 	if err != nil {
 		return err
