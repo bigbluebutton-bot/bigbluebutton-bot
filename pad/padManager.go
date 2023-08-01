@@ -29,6 +29,8 @@ type Pad struct {
 	AuthorID string
 	Text     string
 	Attribs  string
+
+	ChangesetClient *ChangesetClient
 }
 
 // Create new pad
@@ -193,8 +195,16 @@ func (p *Pad) onInitMessage(h *goSocketio.Channel, args ReceveClientReady) {
 		p.Text = args.Data.CollabClientVars.InitialAttributedText.Text
 		p.Attribs = args.Data.CollabClientVars.InitialAttributedText.Attribs
 		fmt.Println("author:", p.AuthorID)
-		fmt.Println("text:", p.Text)
+		fmt.Printf("old text (already in pad):\"%s\"\n", p.Text)
 		fmt.Println("attribs:", p.Attribs)
+
+		p.ChangesetClient = NewChangesetClient("localhost:50051")
+		if err := p.ChangesetClient.Connect(); err != nil {
+			fmt.Println(err)
+			p.Client.Close()
+			return
+		}
+		// p.Text = ""
 
 		//Override onInitMessage with onMessage
 		p.Client.On("message", p.onMessage)
@@ -226,95 +236,85 @@ func (p *Pad) onMessage(h *goSocketio.Channel, mapData interface{}) {
 
 }
 
-/*
-A changeset describes the difference between two revisions of a document1. It has a format like this:
-
-Z:oldLen>diffLen*ops+charBank$
-
-where oldLen and diffLen are the lengths of the old and the difference between the old and new texts
-if the diference between oldLen and newLen is >= 0, then the operation betwenn oldLen and diffLen ist >
-else the operation betwenn oldLen and diffLen ist <
-diffLen will always be positive!
-
-ops are a series of operations to transform
-the old text into the new text, and charBank is a string of characters that are inserted by the operations1.
-
-The operations can be one of these types:
-
-=: keep a number of characters unchanged
--: delete a number of characters
-+: insert a number of characters from the charBank
-*: apply an attribute change to a number of characters
-Each operation has an optional parameter that specifies how many characters it affects. If omitted, it
-defaults to 11.
-
-For example, your changeset:
-
-Z:1>1*0+1$h
-
-means that you start with a text of length 1,
-end with a text of length 1,
-apply an attribute change (*0) to 1 character (the default),
-and insert 1 character (+1) from the charBank (h).
-The result is that you replace whatever character was there before with an h with some attribute.
-*/
-func generateChangeset(oldText *string, newText string) string {
-	oldLen := len(*oldText)
-	newTextLen := len(newText)
-	opCode := ""
-	newLen := oldLen + newTextLen
-
-	if oldLen != 0 {
-		if (*oldText)[oldLen-1] == '\n' {
-			if oldLen-1 > 0 {
-				opCode += "=" + convert.String(oldLen-1)
-			}
-			newLen -= 1
-		} else {
-			opCode += "=" + convert.String(oldLen)
-		}
-	}
-	opCode += "*0"
-
-	opCode += "+" + convert.String(newTextLen)
 
 
-	opDiff := ">"
 
-	diff := newTextLen
 
-	*oldText = strings.Replace(*oldText, "\n", "", -1) + newText + "\n"
 
-	result := "Z:" +
-		convert.String(oldLen) + //number: old legth
-		convert.String(opDiff) + //char: > or <
-		convert.String(diff) + //number: diffence between old and new length
-		convert.String(opCode) + //string: =, -, +, * and number
-		"$" +
-		convert.String(newText) //string: new text
 
-	return result
+
+
+
+
+
+type cursorPosition struct {
+	Type      string `json:"type"`
+	Component string `json:"component"`
+	Data    cursorPositionData   `json:"data"`
+}
+
+type cursorPositionData struct {
+	Type       string `json:"type"`
+	Action     string `json:"action"`
+	LocationY  int    `json:"locationY"`
+	LocationX  int    `json:"locationX"`
+	PadID      string `json:"padId"`
+	MyAuthorID string `json:"myAuthorId"`
+}
+// {"type":"COLLABROOM","component":"pad","data":{"type":"cursor","action":"cursorPosition","locationY":0,"locationX":0,"padId":"g.w1iAVtTf5mR1Po6D$notes","myAuthorId":"a.QJvHNdQ1xJJ8LpTW"}}
+
+
+type padTypingDataApool struct {
+	NumToAttrib map[string][]string `json:"numToAttrib"`
+	NextNum     int                 `json:"nextNum"`
+}
+type padTypingData struct {
+	Type      string             `json:"type"`
+	BaseRev   int                `json:"baseRev"`
+	Changeset string             `json:"changeset"`
+	Apool     padTypingDataApool `json:"apool"`
+}
+type padTyping struct {
+	Type      string        `json:"type"`
+	Component string        `json:"component"`
+	Data      padTypingData `json:"data"`
 }
 
 func (p *Pad) SendText(text string) error {
-	type padTypingDataApool struct {
-		NumToAttrib map[string][]string `json:"numToAttrib"`
-		NextNum     int                 `json:"nextNum"`
-	}
-	type padTypingData struct {
-		Type      string             `json:"type"`
-		BaseRev   int                `json:"baseRev"`
-		Changeset string             `json:"changeset"`
-		Apool     padTypingDataApool `json:"apool"`
-	}
-	type padTyping struct {
-		Type      string        `json:"type"`
-		Component string        `json:"component"`
-		Data      padTypingData `json:"data"`
+
+
+    fmt.Println("Old text: ", p.Text)
+	fmt.Println("New text: ", text)
+
+    // changeset := generateChangeset(p.Text, text)
+	changeset, err := p.ChangesetClient.GenerateChangeset(p.Text, text, p.Attribs)
+	if err != nil {
+		return err
 	}
 
-	changeset := generateChangeset(&p.Text, text)
-	fmt.Println(changeset)
+    fmt.Println("Generated changeset: ", changeset)
+
+	p.Text = text
+	// "Z:1>5*0+5$Hello"
+	// "Z:1>4|+4$ello"
+	// "Z:1>5|=1+5$Hello"
+
+	// Send cursorPosition to x: 0, y: 0
+	commandCursorPosition := cursorPosition{
+		Type:      "COLLABROOM",
+		Component: "pad",
+		Data: cursorPositionData{
+			Type:       "cursor",
+			Action:     "cursorPosition",
+			LocationY:  0,
+			LocationX:  1,
+			PadID:      p.PadId,
+			MyAuthorID: p.AuthorID,
+		},
+	}
+	p.Client.Emit("message", commandCursorPosition)
+
+
 
 	commandTyping := padTyping{
 		Type:      "COLLABROOM",
