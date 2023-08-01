@@ -98,7 +98,8 @@ proto.changset.GenerateRequest.prototype.toObject = function(opt_includeInstance
 proto.changset.GenerateRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
     oldtext: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    newtext: jspb.Message.getFieldWithDefault(msg, 2, "")
+    newtext: jspb.Message.getFieldWithDefault(msg, 2, ""),
+    attribs: jspb.Message.getFieldWithDefault(msg, 3, "")
   };
 
   if (includeInstance) {
@@ -143,6 +144,10 @@ proto.changset.GenerateRequest.deserializeBinaryFromReader = function(msg, reade
       var value = /** @type {string} */ (reader.readString());
       msg.setNewtext(value);
       break;
+    case 3:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setAttribs(value);
+      break;
     default:
       reader.skipField();
       break;
@@ -186,6 +191,13 @@ proto.changset.GenerateRequest.serializeBinaryToWriter = function(message, write
       f
     );
   }
+  f = message.getAttribs();
+  if (f.length > 0) {
+    writer.writeString(
+      3,
+      f
+    );
+  }
 };
 
 
@@ -222,6 +234,24 @@ proto.changset.GenerateRequest.prototype.getNewtext = function() {
  */
 proto.changset.GenerateRequest.prototype.setNewtext = function(value) {
   return jspb.Message.setProto3StringField(this, 2, value);
+};
+
+
+/**
+ * optional string attribs = 3;
+ * @return {string}
+ */
+proto.changset.GenerateRequest.prototype.getAttribs = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 3, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.changset.GenerateRequest} returns this
+ */
+proto.changset.GenerateRequest.prototype.setAttribs = function(value) {
+  return jspb.Message.setProto3StringField(this, 3, value);
 };
 
 

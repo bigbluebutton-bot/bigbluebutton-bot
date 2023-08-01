@@ -183,7 +183,7 @@ func main() {
 
 	time.Sleep(2 * time.Second)
 
-	err = enCapture.SendText("Hello world")
+	err = enCapture.SendText(" world")
 	if err != nil {
 		panic(err)
 	}

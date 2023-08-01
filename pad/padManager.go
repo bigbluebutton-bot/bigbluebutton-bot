@@ -10,7 +10,6 @@ import (
 	"net/url"
 	"strings"
 
-	convert "github.com/benpate/convert"
 	goSocketio "github.com/graarh/golang-socketio"
 	goSocketioTransport "github.com/graarh/golang-socketio/transport"
 	"golang.org/x/net/publicsuffix"
@@ -29,6 +28,9 @@ type Pad struct {
 	AuthorID string
 	Text     string
 	Attribs  string
+
+	BaseRev int
+	LocationX int
 
 	ChangesetClient *ChangesetClient
 }
@@ -65,6 +67,11 @@ func NewPad(url string, wsURL string, sessionToken string, padId string, session
 		Client: nil,
 
 		AuthorID: "",
+		Text:     "",
+		Attribs:  "",
+
+		BaseRev: 0,
+		LocationX: 0,
 	}
 }
 
@@ -299,6 +306,8 @@ func (p *Pad) SendText(text string) error {
 	// "Z:1>4|+4$ello"
 	// "Z:1>5|=1+5$Hello"
 
+	p.LocationX = p.LocationX + len(text)
+
 	// Send cursorPosition to x: 0, y: 0
 	commandCursorPosition := cursorPosition{
 		Type:      "COLLABROOM",
@@ -307,7 +316,7 @@ func (p *Pad) SendText(text string) error {
 			Type:       "cursor",
 			Action:     "cursorPosition",
 			LocationY:  0,
-			LocationX:  1,
+			LocationX:  p.LocationX,
 			PadID:      p.PadId,
 			MyAuthorID: p.AuthorID,
 		},
@@ -321,7 +330,7 @@ func (p *Pad) SendText(text string) error {
 		Component: "pad",
 		Data: padTypingData{
 			Type:      "USER_CHANGES",
-			BaseRev:   0,
+			BaseRev:   p.BaseRev,
 			Changeset: changeset, //"Z:1>1*0+1$g",
 			Apool: padTypingDataApool{
 				NumToAttrib: map[string][]string{
@@ -331,7 +340,16 @@ func (p *Pad) SendText(text string) error {
 			},
 		},
 	}
-	p.Client.Emit("message", commandTyping)
+	err = p.Client.Emit("message", commandTyping)
+	if err != nil {
+		return err
+	}
+
+	// // Update attribs
+	// p.Attribs = p.Attribs + "Z:1>1*0+1$g"
+
+	// Update baseRev
+	p.BaseRev = p.BaseRev + 1
 
 
 	return nil
