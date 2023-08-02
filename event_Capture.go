@@ -57,11 +57,6 @@ func (c *Client) CreateCapture(language string) (*pad.Pad, error) {
 		return nil, err
 	}
 
-	_, err = c.ddpCall(bbb.CreateSessionCall, "en")
-	if err != nil {
-		return nil, err
-	}
-
 	//Get padID
 	var padId string
 	getPadIDtry := 0
@@ -84,6 +79,11 @@ func (c *Client) CreateCapture(language string) (*pad.Pad, error) {
 		break
 	}
 	fmt.Println("padID: " + padId)
+
+	_, err = c.ddpCall(bbb.CreateSessionCall, "en")
+	if err != nil {
+		return nil, err
+	}
 
 	//Get sessionID
 	var sessionID string
@@ -116,6 +116,18 @@ func (c *Client) CreateCapture(language string) (*pad.Pad, error) {
 			}
 		}
 		time.Sleep(100 * time.Millisecond)
+
+		if (getsessionIDtry % 10) == 9 {
+			fmt.Println("Retry to create and subscribe to pads-sessions")
+			_, err = c.ddpCall(bbb.CreateSessionCall, "en")
+			if err != nil {
+				fmt.Println("Failed to create pad session")
+			}
+
+			if err := c.ddpSubscribe(bbb.PadsSessionsSub, nil); err != nil {
+				fmt.Println("Failed to subscribe to pads-sessions")
+			}
+		}
 
 		if getsessionIDtry > 100 {
 			return nil, errors.New("timeout to get sessionID")
