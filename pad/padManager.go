@@ -201,6 +201,7 @@ func (p *Pad) onInitMessage(h *goSocketio.Channel, args ReceveClientReady) {
 		p.AuthorID = args.Data.UserID
 		p.Text = args.Data.CollabClientVars.InitialAttributedText.Text
 		p.Attribs = args.Data.CollabClientVars.InitialAttributedText.Attribs
+		p.BaseRev = args.Data.CollabClientVars.Rev
 		fmt.Println("author:", p.AuthorID)
 		fmt.Printf("old text (already in pad):\"%s\"\n", p.Text)
 		fmt.Println("attribs:", p.Attribs)

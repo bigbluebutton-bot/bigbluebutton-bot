@@ -9,6 +9,7 @@ type ReceveClientReady struct {
 				Text    string `json:"text"`
 				Attribs string `json:"attribs"`
 			} `json:"initialAttributedText"`
+			Rev  int   `json:"rev"`
 			//...
 		} `json:"collab_client_vars"`
 		//...
