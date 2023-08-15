@@ -23,9 +23,22 @@ function Generate(call, callback) {
  * sample server port
  */
 function main() {
+  // Get arguments from process.argv
+  const args = process.argv.slice(2);
+  var ip = args[0];
+  var port = args[1];
+
+  if (!ip || !port) {
+    ip = "0.0.0.0"
+    port = "50051"
+    console.error("No IP or Port specified, using default values")
+  }
+
+  console.log(`Addr: ${ip}:${port}`);
+
   var server = new grpc.Server();
-  server.addService(services.ChangesetService, {generate: Generate});
-  server.bindAsync('0.0.0.0:50051', grpc.ServerCredentials.createInsecure(), () => {
+  server.addService(services.ChangesetService, {generate: Generate, exit: Exit});
+  server.bindAsync(`${ip}:${port}`, grpc.ServerCredentials.createInsecure(), () => {
     server.start();
   });
 }
