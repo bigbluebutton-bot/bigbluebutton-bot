@@ -290,8 +290,8 @@ type padTyping struct {
 
 func (p *Pad) SendText(text string) error {
 
-	newtext := strings.ReplaceAll(p.Text, "\n", "") + text
-	oldtext := strings.ReplaceAll(p.Text, "\n", "") + "\n"
+	newtext := strings.TrimSuffix(p.Text, "\n") + text
+	oldtext := strings.TrimSuffix(p.Text, "\n") + "\n"
 
     fmt.Println("Old text: ", oldtext)
 	fmt.Println("New text: ", newtext)
@@ -304,7 +304,7 @@ func (p *Pad) SendText(text string) error {
 
     fmt.Println("Generated changeset: ", changeset)
 
-	p.Text = strings.ReplaceAll(p.Text, "\n", "") + text
+	p.Text = strings.TrimSuffix(p.Text, "\n") + text + "\n"
 	// "Z:1>5*0+5$Hello"
 	// "Z:1>4|+4$ello"
 	// "Z:1>5|=1+5$Hello"
