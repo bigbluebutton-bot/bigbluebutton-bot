@@ -23,6 +23,9 @@ type Pad struct {
 	SessionID    string
 	Cookie       []*http.Cookie
 
+	ChangesetServerIP string
+	ChangesetServerPort string
+
 	Client *goSocketio.Client
 
 	AuthorID string
@@ -111,6 +114,16 @@ func (p *Pad) RegisterSession() error {
 
 // Connect to the pad
 func (p *Pad) Connect() error {
+
+	// Create changeset client and start server
+	p.ChangesetClient = NewChangesetClient("localhost", "50051")
+
+	// Start changeset server
+	if err := p.ChangesetClient.StartChangesetServer(); err != nil {
+		return err
+	}
+
+
 	if err := p.RegisterSession(); err != nil {
 		return err
 	}
@@ -194,6 +207,9 @@ func (p *Pad) onConnect(h *goSocketio.Channel) {
 
 func (p *Pad) onDisconnect(h *goSocketio.Channel) {
 	fmt.Println("Disconnected")
+
+	// Stop changeset server
+	p.ChangesetClient.StopChangesetServer()
 }
 
 func (p *Pad) onInitMessage(h *goSocketio.Channel, args ReceveClientReady) {
@@ -206,7 +222,7 @@ func (p *Pad) onInitMessage(h *goSocketio.Channel, args ReceveClientReady) {
 		fmt.Printf("old text (already in pad):\"%s\"\n", p.Text)
 		fmt.Println("attribs:", p.Attribs)
 
-		p.ChangesetClient = NewChangesetClient("localhost:50051")
+		// Connect to server
 		if err := p.ChangesetClient.Connect(); err != nil {
 			fmt.Println(err)
 			p.Client.Close()

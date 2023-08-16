@@ -24,6 +24,7 @@ const _ = grpc.SupportPackageIsVersion7
 type ChangesetClient interface {
 	// Sends a greeting
 	Generate(ctx context.Context, in *GenerateRequest, opts ...grpc.CallOption) (*GenerateReply, error)
+	Ping(ctx context.Context, in *Nothing, opts ...grpc.CallOption) (*Nothing, error)
 }
 
 type changesetClient struct {
@@ -43,12 +44,22 @@ func (c *changesetClient) Generate(ctx context.Context, in *GenerateRequest, opt
 	return out, nil
 }
 
+func (c *changesetClient) Ping(ctx context.Context, in *Nothing, opts ...grpc.CallOption) (*Nothing, error) {
+	out := new(Nothing)
+	err := c.cc.Invoke(ctx, "/changset.Changeset/Ping", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // ChangesetServer is the server API for Changeset service.
 // All implementations must embed UnimplementedChangesetServer
 // for forward compatibility
 type ChangesetServer interface {
 	// Sends a greeting
 	Generate(context.Context, *GenerateRequest) (*GenerateReply, error)
+	Ping(context.Context, *Nothing) (*Nothing, error)
 	mustEmbedUnimplementedChangesetServer()
 }
 
@@ -58,6 +69,9 @@ type UnimplementedChangesetServer struct {
 
 func (UnimplementedChangesetServer) Generate(context.Context, *GenerateRequest) (*GenerateReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Generate not implemented")
+}
+func (UnimplementedChangesetServer) Ping(context.Context, *Nothing) (*Nothing, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Ping not implemented")
 }
 func (UnimplementedChangesetServer) mustEmbedUnimplementedChangesetServer() {}
 
@@ -90,6 +104,24 @@ func _Changeset_Generate_Handler(srv interface{}, ctx context.Context, dec func(
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Changeset_Ping_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Nothing)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ChangesetServer).Ping(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/changset.Changeset/Ping",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ChangesetServer).Ping(ctx, req.(*Nothing))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Changeset_ServiceDesc is the grpc.ServiceDesc for Changeset service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -100,6 +132,10 @@ var Changeset_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Generate",
 			Handler:    _Changeset_Generate_Handler,
+		},
+		{
+			MethodName: "Ping",
+			Handler:    _Changeset_Ping_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
