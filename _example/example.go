@@ -7,7 +7,7 @@ import (
 	"os"
 	"time"
 
-	"api"
+	api "github.com/ITLab-CC/bigbluebutton-bot/api"
 
 	bot "github.com/ITLab-CC/bigbluebutton-bot"
 

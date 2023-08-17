@@ -1,12 +1,12 @@
 package bot
 
 import (
-	api "api"
+	api "github.com/ITLab-CC/bigbluebutton-bot/api"
 	"errors"
 	"net/http"
 	"time"
 
-	ddp "ddp"
+	ddp "github.com/gopackage/ddp"
 
 	bbb "github.com/ITLab-CC/bigbluebutton-bot/bbb"
 )

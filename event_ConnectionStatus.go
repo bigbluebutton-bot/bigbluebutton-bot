@@ -1,7 +1,7 @@
 package bot
 
 import (
-	ddp "ddp"
+	ddp "github.com/gopackage/ddp"
 	"reflect"
 )
 

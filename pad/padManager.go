@@ -10,8 +10,8 @@ import (
 	"net/url"
 	"strings"
 
-	goSocketio "github.com/graarh/golang-socketio"
-	goSocketioTransport "github.com/graarh/golang-socketio/transport"
+	goSocketio "github.com/JulianKropp/golang-socketio"
+	goSocketioTransport "github.com/JulianKropp/golang-socketio/transport"
 	"golang.org/x/net/publicsuffix"
 )
 
@@ -23,7 +23,7 @@ type Pad struct {
 	SessionID    string
 	Cookie       []*http.Cookie
 
-	ChangesetServerIP string
+	ChangesetServerIP   string
 	ChangesetServerPort string
 
 	Client *goSocketio.Client
@@ -32,7 +32,7 @@ type Pad struct {
 	Text     string
 	Attribs  string
 
-	BaseRev int
+	BaseRev   int
 	LocationX int
 
 	ChangesetClient *ChangesetClient
@@ -73,7 +73,7 @@ func NewPad(url string, wsURL string, sessionToken string, padId string, session
 		Text:     "",
 		Attribs:  "",
 
-		BaseRev: 0,
+		BaseRev:   0,
 		LocationX: 0,
 	}
 }
@@ -122,7 +122,6 @@ func (p *Pad) Connect() error {
 	if err := p.ChangesetClient.StartChangesetServer(); err != nil {
 		return err
 	}
-
 
 	if err := p.RegisterSession(); err != nil {
 		return err
@@ -260,21 +259,10 @@ func (p *Pad) onMessage(h *goSocketio.Channel, mapData interface{}) {
 
 }
 
-
-
-
-
-
-
-
-
-
-
-
 type cursorPosition struct {
-	Type      string `json:"type"`
-	Component string `json:"component"`
-	Data    cursorPositionData   `json:"data"`
+	Type      string             `json:"type"`
+	Component string             `json:"component"`
+	Data      cursorPositionData `json:"data"`
 }
 
 type cursorPositionData struct {
@@ -285,8 +273,8 @@ type cursorPositionData struct {
 	PadID      string `json:"padId"`
 	MyAuthorID string `json:"myAuthorId"`
 }
-// {"type":"COLLABROOM","component":"pad","data":{"type":"cursor","action":"cursorPosition","locationY":0,"locationX":0,"padId":"g.w1iAVtTf5mR1Po6D$notes","myAuthorId":"a.QJvHNdQ1xJJ8LpTW"}}
 
+// {"type":"COLLABROOM","component":"pad","data":{"type":"cursor","action":"cursorPosition","locationY":0,"locationX":0,"padId":"g.w1iAVtTf5mR1Po6D$notes","myAuthorId":"a.QJvHNdQ1xJJ8LpTW"}}
 
 type padTypingDataApool struct {
 	NumToAttrib map[string][]string `json:"numToAttrib"`
@@ -309,16 +297,16 @@ func (p *Pad) SendText(text string) error {
 	newtext := strings.TrimSuffix(p.Text, "\n") + text
 	oldtext := strings.TrimSuffix(p.Text, "\n") + "\n"
 
-    fmt.Println("Old text: ", oldtext)
+	fmt.Println("Old text: ", oldtext)
 	fmt.Println("New text: ", newtext)
 
-    // changeset := generateChangeset(p.Text, text)
+	// changeset := generateChangeset(p.Text, text)
 	changeset, err := p.ChangesetClient.GenerateChangeset(oldtext, newtext, p.Attribs)
 	if err != nil {
 		return err
 	}
 
-    fmt.Println("Generated changeset: ", changeset)
+	fmt.Println("Generated changeset: ", changeset)
 
 	p.Text = strings.TrimSuffix(p.Text, "\n") + text + "\n"
 	// "Z:1>5*0+5$Hello"
@@ -341,8 +329,6 @@ func (p *Pad) SendText(text string) error {
 		},
 	}
 	p.Client.Emit("message", commandCursorPosition)
-
-
 
 	commandTyping := padTyping{
 		Type:      "COLLABROOM",
@@ -375,7 +361,6 @@ func (p *Pad) SendText(text string) error {
 
 	// Update baseRev
 	p.BaseRev = p.BaseRev + 1
-
 
 	return nil
 }

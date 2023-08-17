@@ -1,7 +1,7 @@
 package bbb
 
 import (
-	ddp "ddp"
+	ddp "github.com/gopackage/ddp"
 	convert "github.com/benpate/convert"
 )
 
