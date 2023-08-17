@@ -8,6 +8,10 @@
         "client": {
             "url": "https://example.com/html5client/",
             "ws": "wss://example.com/html5client/websocket"
+        },
+        "pad": {
+            "url": "https://example.com/pad/",
+            "ws": "wss://example.com/pad/websocket"
         }
     }
 }

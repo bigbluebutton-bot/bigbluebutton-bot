@@ -5,38 +5,44 @@ import (
 	"reflect"
 )
 
-type templateListener func(string)
+//  EXAMPLE in main.go
+// --------------------
+// err = client.OnTemplate(func(info string) {
+// 		fmt.Println(info)
+// 	}
+// })
+// if err != nil {
+// 	panic(err)
+// }
+
+type templateListener func(info string)
 
 // OnTemplate in order to receive Template changes.
-func (c *Client) OnTemplate(listener templateListener) {
-	if c.events["OnTemplate"] == nil {
-		e := &event{
-			client: c,
+func (c *Client) OnTemplate(listener templateListener) error {
+	if _, found := c.events["OnTemplate"]; !found {
+
+		// Subscribe to the template collection
+		if err := c.ddpSubscribe(bbb.template, c.updateTemplate); err != nil {
+			return err
 		}
-		c.ddpClient.AddTemplateListener(e)
 	}
 
 	c.events["OnTemplate"] = append(c.events["OnStatus"], listener)
+	return nil
 }
 
-// Will be emited by ddpClient
-func (e *event) Template(infos string) {
-	// Do stuff
-
-	e.client.updateStatus(infos)
-}
-
-// informs all listeners with the new infos.
-func (c *Client) updateTemplate(infos string) {
+// informs all listeners with the new info
+func (c *Client) updateTemplate(collection string, operation string, id string, doc ddp.Update) {
+	//Read data from doc
+	info := convert.String(doc["info"], "")
 	// Inform all listeners
 	for _, event := range c.events["OnTemplate"] {
-
-		// call event(infos)
+		// call event(info)
 		f := reflect.TypeOf(event)
 		if f.Kind() == reflect.Func { //is function
 			if f.NumIn() == 1 && f.NumOut() == 0 { //inbound parameters == 1, outbound parameters == 0
 				if f.In(0).Kind() == reflect.String { //parameter 0 is of type string (StatusType)
-					reflect.ValueOf(event).Call([]reflect.Value{reflect.ValueOf(status)})
+					go reflect.ValueOf(event).Call([]reflect.Value{reflect.ValueOf(info)}) // Call the function with the parameter info
 				}
 			}
 		}

@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+option go_package = "/changesetproto";
+
+package changset;
+
+// The greeting service definition.
+service Changeset {
+  // Sends a greeting
+  rpc Generate (GenerateRequest) returns (GenerateReply) {}
+  rpc Ping (Nothing) returns (Nothing) {}
+}
+
+// The request message containing the user's name.
+message GenerateRequest {
+  string oldtext = 1;
+  string newtext = 2;
+  string attribs = 3;
+}
+
+// The response message containing the greetings
+message GenerateReply {
+  string changeset = 1;
+}
+
+message Nothing {
+}

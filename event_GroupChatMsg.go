@@ -1,7 +1,7 @@
 package bot
 
 import (
-	ddp "ddp"
+	ddp "github.com/gopackage/ddp"
 	"errors"
 	"reflect"
 	"time"
@@ -15,24 +15,14 @@ type groupChatMsgListener func(msg bbb.Message)
 // OnGroupChatMsg in order to receive GroupChatMsg changes.
 func (c *Client) OnGroupChatMsg(listener groupChatMsgListener) error {
 	if c.events["OnGroupChatMsg"] == nil {
-		e := &event{
-			client: c,
+
+		if err := c.ddpSubscribe(bbb.GroupChatSub, nil); err != nil {
+			return err
 		}
 
-		err := c.ddpClient.Sub("group-chat")
-		if err != nil {
-			return errors.New("could not subscribe to group-chat: " + err.Error())
+		if err := c.ddpSubscribe(bbb.GroupChatMsgSub, c.updateGroupChatMsg); err != nil {
+			return err
 		}
-
-		// subscribe to "group-chat-msg"
-		err = c.ddpClient.Sub("group-chat-msg", 0)
-		if err != nil {
-			return errors.New("could not subscribe to group-chat-msg: " + err.Error())
-		}
-
-		collection := c.ddpClient.CollectionByName("group-chat-msg")
-
-		collection.AddUpdateListener(e)
 	}
 
 	c.events["OnGroupChatMsg"] = append(c.events["OnGroupChatMsg"], listener)
@@ -40,19 +30,13 @@ func (c *Client) OnGroupChatMsg(listener groupChatMsgListener) error {
 	return nil
 }
 
-// Will be emited by ddpClient
-func (e *event) CollectionUpdate(collection string, operation string, id string, doc ddp.Update) {
-
+// informs all listeners with the new infos.
+func (c *Client) updateGroupChatMsg(collection string, operation string, id string, doc ddp.Update) {
 	if doc == nil || doc["id"] == nil {
 		return
 	}
 	msg := bbb.ConvertInToMessage(doc)
 
-	e.client.updateGroupChatMsg(msg)
-}
-
-// informs all listeners with the new infos.
-func (c *Client) updateGroupChatMsg(msg bbb.Message) {
 	// Inform all listeners
 	for _, event := range c.events["OnGroupChatMsg"] {
 
@@ -68,15 +52,14 @@ func (c *Client) updateGroupChatMsg(msg bbb.Message) {
 	}
 }
 
-
 func (c *Client) SendChatMsg(message string, chatId string) error {
 	now := time.Now()
 	timestemp := convert.String(now.UnixNano())
 
 	messageSend := bbb.MessageSend{
-		ID: c.UserID + timestemp[:len(timestemp)-(len(timestemp)-13)],
+		ID: c.InternalUserID + timestemp[:len(timestemp)-(len(timestemp)-13)],
 		Sender: bbb.MessageSendSender{
-			ID:   c.UserID,
+			ID:   c.InternalUserID,
 			Name: "",
 			Role: "",
 		},
@@ -84,7 +67,7 @@ func (c *Client) SendChatMsg(message string, chatId string) error {
 		Message:            message,
 	}
 
-	_, err := c.ddpClient.Call("sendGroupChatMsg", chatId, messageSend)
+	_, err := c.ddpCall(bbb.SendGroupChatMsgCall, chatId, messageSend)
 	if err != nil {
 		return errors.New("could not send message: " + err.Error())
 	}

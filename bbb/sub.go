@@ -36,6 +36,7 @@ const (
 	StreamAnnotationsRemovedSub
 	GroupChatMsgSub
 	CurrentPollSub
+	CurrentUser
 )
 
 type streamsettings struct {
@@ -118,6 +119,8 @@ func GetSub(SubName SubType) (string, []interface{}) {
 		return "group-chat-msg", []interface{}{0}
 	case CurrentPollSub:
 		return "current-poll", []interface{}{false, true}
+	case CurrentUser:
+		return "current-user", []interface{}{}
 	default:
 		return "", []interface{}{}
 	}

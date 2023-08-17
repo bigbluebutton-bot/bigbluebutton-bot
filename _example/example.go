@@ -7,7 +7,7 @@ import (
 	"os"
 	"time"
 
-	"api"
+	api "github.com/ITLab-CC/bigbluebutton-bot/api"
 
 	bot "github.com/ITLab-CC/bigbluebutton-bot"
 
@@ -25,9 +25,15 @@ type configClient struct {
 	WS  string `json:"ws"`
 }
 
+type configPad struct {
+	URL string `json:"url"`
+	WS  string `json:"ws"`
+}
+
 type configBBB struct {
 	API    configAPI	`json:"api"`
 	Client configClient	`json:"client"`
+	Pad configPad		`json:"pad"`
 }
 
 type config struct {
@@ -41,16 +47,22 @@ func readConfig(file string) config {
 			API: configAPI{
 				URL: os.Getenv("BBB_API_URL"),
 				Secret: os.Getenv("BBB_API_SECRET"),
-				SHA: api.SHA(os.Getenv("BBB_API_SECRET")),
+				SHA: api.SHA(os.Getenv("BBB_API_SHA")),
 			},
 			Client: configClient{
 				URL: os.Getenv("BBB_CLIENT_URL"),
 				WS: os.Getenv("BBB_CLIENT_WS"),
 			},
+			Pad: configPad{
+				URL: os.Getenv("BBB_PAD_URL"),
+				WS: os.Getenv("BBB_PAD_WS"),
+			},
 		},
 	}
 
-	if (conf.BBB.API.URL != "" && conf.BBB.API.Secret != "" && conf.BBB.API.SHA != "" && conf.BBB.Client.URL != "" && conf.BBB.Client.WS != ""){
+	if (conf.BBB.API.URL != "" && conf.BBB.API.Secret != "" && conf.BBB.API.SHA != "" &&
+		conf.BBB.Client.URL != "" && conf.BBB.Client.WS != "" &&
+		conf.BBB.Pad.URL != "" && conf.BBB.Pad.WS != ""){
 		fmt.Println("Using env variables for config")
 		return conf
 	}
@@ -119,7 +131,7 @@ func main() {
 	}
 	fmt.Println("Moderator join url: " + url)
 
-	time.Sleep(5 * time.Second)
+	time.Sleep(1 * time.Second)
 
 
 
@@ -127,7 +139,7 @@ func main() {
 
 
 
-	client, err := bot.NewClient(conf.BBB.Client.URL, conf.BBB.Client.WS, conf.BBB.API.URL, conf.BBB.API.Secret)
+	client, err := bot.NewClient(conf.BBB.Client.URL, conf.BBB.Client.WS, conf.BBB.Pad.URL, conf.BBB.Pad.WS, conf.BBB.API.URL, conf.BBB.API.Secret)
 	if err != nil {
 		panic(err)
 	}
@@ -146,7 +158,7 @@ func main() {
 
 		fmt.Println("[" + msg.SenderName + "]: " + msg.Message)
 
-		if(msg.Sender != client.UserID) {
+		if(msg.Sender != client.InternalUserID) {
 			if(msg.Message == "ping") {
 				fmt.Println("Sending pong")
 				client.SendChatMsg("pong", msg.ChatId)
@@ -157,8 +169,26 @@ func main() {
 		panic(err)
 	}
 
+	enCapture, err := client.CreateCapture("en")
+	if err != nil {
+		panic(err)
+	}
 
-	time.Sleep(20 * time.Second)
+	time.Sleep(2 * time.Second)
+
+	err = enCapture.SendText("Hello")
+	if err != nil {
+		panic(err)
+	}
+
+	time.Sleep(2 * time.Second)
+
+	err = enCapture.SendText(" world")
+	if err != nil {
+		panic(err)
+	}
+
+	time.Sleep(2000 * time.Second)
 
 	fmt.Println("Bot leaves " + newmeeting.MeetingName)
 	err = client.Leave()

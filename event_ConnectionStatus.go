@@ -1,7 +1,7 @@
 package bot
 
 import (
-	ddp "ddp"
+	ddp "github.com/gopackage/ddp"
 	"reflect"
 )
 
@@ -10,17 +10,14 @@ type statusListener func(StatusType)
 // OnStatus in order to receive status changes.
 func (c *Client) OnStatus(listener statusListener) {
 	if c.events["OnStatus"] == nil {
-		e := &event{
-			client: c,
-		}
-		c.ddpClient.AddStatusListener(e)
+		c.ddpClient.AddStatusListener(c.ddpEventHandler)
 	}
 
 	c.events["OnStatus"] = append(c.events["OnStatus"], listener)
 }
 
 // Will be emited by ddpClient
-func (e *event) Status(status int) {
+func (e *ddpEventHandler) Status(status int) {
 	var st StatusType
 	switch status {
 	case ddp.DIALING:
