@@ -30,10 +30,15 @@ type configPad struct {
 	WS  string `json:"ws"`
 }
 
+type configWebRTC struct {
+	WS string `json:"ws"`
+}
+
 type configBBB struct {
 	API    configAPI	`json:"api"`
 	Client configClient	`json:"client"`
 	Pad configPad		`json:"pad"`
+	WebRTC configWebRTC `json:"webrtc"`
 }
 
 type config struct {
@@ -56,6 +61,9 @@ func readConfig(file string) config {
 			Pad: configPad{
 				URL: os.Getenv("BBB_PAD_URL"),
 				WS: os.Getenv("BBB_PAD_WS"),
+			},
+			WebRTC: configWebRTC{
+				WS: os.Getenv("BBB_WEBRTC_WS"),
 			},
 		},
 	}
@@ -139,7 +147,7 @@ func main() {
 
 
 
-	client, err := bot.NewClient(conf.BBB.Client.URL, conf.BBB.Client.WS, conf.BBB.Pad.URL, conf.BBB.Pad.WS, conf.BBB.API.URL, conf.BBB.API.Secret)
+	client, err := bot.NewClient(conf.BBB.Client.URL, conf.BBB.Client.WS, conf.BBB.Pad.URL, conf.BBB.Pad.WS, conf.BBB.API.URL, conf.BBB.API.Secret, conf.BBB.WebRTC.WS)
 	if err != nil {
 		panic(err)
 	}
@@ -169,26 +177,34 @@ func main() {
 		panic(err)
 	}
 
-	enCapture, err := client.CreateCapture("en")
+	// enCapture, err := client.CreateCapture("en")
+	// if err != nil {
+	// 	panic(err)
+	// }
+
+	// time.Sleep(2 * time.Second)
+
+	// err = enCapture.SendText("Hello")
+	// if err != nil {
+	// 	panic(err)
+	// }
+
+	// time.Sleep(2 * time.Second)
+
+	// err = enCapture.SendText(" world")
+	// if err != nil {
+	// 	panic(err)
+	// }
+
+	// time.Sleep(2000 * time.Second)
+
+
+	err = client.ListenToAudio()
 	if err != nil {
 		panic(err)
 	}
 
-	time.Sleep(2 * time.Second)
-
-	err = enCapture.SendText("Hello")
-	if err != nil {
-		panic(err)
-	}
-
-	time.Sleep(2 * time.Second)
-
-	err = enCapture.SendText(" world")
-	if err != nil {
-		panic(err)
-	}
-
-	time.Sleep(2000 * time.Second)
+	
 
 	fmt.Println("Bot leaves " + newmeeting.MeetingName)
 	err = client.Leave()
