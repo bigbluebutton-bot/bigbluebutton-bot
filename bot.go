@@ -32,8 +32,6 @@ type Client struct {
 	ClientWSURL string
 	PadURL      string
 	PadWSURL    string
-	ApiURL      string
-	apiSecret   string
 	// to make api requests to the BBB-server
 	API *api.ApiRequest
 
@@ -67,8 +65,6 @@ func NewClient(clientURL string, clientWSURL string, padURL string, padWSURL str
 		ClientWSURL: clientWSURL,
 		PadURL:      padURL,
 		PadWSURL:    padWSURL,
-		ApiURL:      apiURL,
-		apiSecret:   apiSecret,
 
 		ddpClient: ddpClient,
 
