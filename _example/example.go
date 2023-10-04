@@ -204,6 +204,9 @@ func main() {
 		panic(err)
 	}
 
+
+	time.Sleep(5000 * time.Second)
+
 	
 
 	fmt.Println("Bot leaves " + newmeeting.MeetingName)
