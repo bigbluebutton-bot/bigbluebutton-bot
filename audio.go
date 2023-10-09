@@ -5,19 +5,23 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"net"
 	"net/http"
 	"net/http/cookiejar"
 	"net/url"
 	"strconv"
+	"strings"
+
 	"time"
 
-	logging "github.com/pion/logging"
+	"github.com/pion/interceptor"
+	"github.com/pion/rtp"
+
 	"github.com/pion/sdp/v3"
-	turn "github.com/pion/turn/v2"
 	"github.com/pion/webrtc/v3"
 
 	"github.com/gorilla/websocket"
+	"github.com/pion/webrtc/v4/pkg/media/oggwriter"
+
 )
 
 // ListenToAudio joins the audio channel of the meeting and starts listening to the audio stream.
@@ -102,10 +106,50 @@ func (c *Client) ListenToAudio() error {
 		return errors.New("status response was not successful. Unable to establish webrtc audio connection. ID: " + status.ID + " ,Type: " + status.Type + " ,Success: " + status.Success)
 	}
 
+
+	
+	oggFile, err := oggwriter.New("audio_output.ogg", 48000, 2)
+	if err != nil {
+		return err
+	}
+	defer oggFile.Close()
+
+	peerConnection.OnTrack(func(track *webrtc.TrackRemote, receiver *webrtc.RTPReceiver) {
+		// Only handle audio tracks
+		if track.Kind() != webrtc.RTPCodecTypeAudio {
+			return
+		}
+	
+		go func() {
+			buffer := make([]byte, 1500)
+			for {
+				n, _, readErr := track.Read(buffer)
+				if readErr != nil {
+					fmt.Println("Error during audio track read:", readErr)
+					return
+				}
+	
+				rtpPacket := &rtp.Packet{}
+				if err := rtpPacket.Unmarshal(buffer[:n]); err != nil {
+					fmt.Println("Error during RTP packet unmarshal:", err)
+					return
+				}
+	
+				if err := oggFile.WriteRTP(rtpPacket); err != nil {
+					fmt.Println("Error during OGG file write:", err)
+					return
+				}
+			}
+		}()
+	})
+	
+
+
+
+	time.Sleep(20 * time.Second)
+
 	return nil
 }
-
-
 
 
 
@@ -169,9 +213,165 @@ func (c *Client) GetStunTurnServers() ([]stunServers, []turnServers, error) {
 
 
 
+func ExtractClockRateFromSDP(sdpStr string) (uint32, error) {
+    sessionDescription := sdp.SessionDescription{}
+    err := sessionDescription.Unmarshal([]byte(sdpStr))
+    if err != nil {
+        return 0, err
+    }
+    for _, mediaDescription := range sessionDescription.MediaDescriptions {
+        for _, attribute := range mediaDescription.Attributes {
+            if attribute.Key == "rtpmap" && strings.Contains(attribute.Value, "opus") {
+                parts := strings.Split(attribute.Value, "/")
+                if len(parts) > 1 {
+                    clock, err := strconv.Atoi(parts[1])
+					if err != nil {
+						return 0, err
+					}
+					return uint32(clock), nil
+                }
+            }
+        }
+    }
+    return 0, nil
+}
+
+func ExtractChannelsFromSDP(sdpStr string) (uint16, error) {
+    sessionDescription := sdp.SessionDescription{}
+    err := sessionDescription.Unmarshal([]byte(sdpStr))
+    if err != nil {
+        return 0, err
+    }
+    for _, mediaDescription := range sessionDescription.MediaDescriptions {
+        for _, attribute := range mediaDescription.Attributes {
+            if attribute.Key == "rtpmap" && strings.Contains(attribute.Value, "opus") {
+                parts := strings.Split(attribute.Value, "/")
+                if len(parts) > 2 {
+                    channels, err := strconv.Atoi(parts[2])
+					if err != nil {
+						return 0, err
+					}
+					return uint16(channels), nil
+                }
+            }
+        }
+    }
+    return 0, nil
+}
+
+func ExtractFmtpFromSDP(sdpStr string) (string, error) {
+    // Parse the SDP offer
+    sessionDescription := sdp.SessionDescription{}
+    err := sessionDescription.Unmarshal([]byte(sdpStr))
+    if err != nil {
+        return "", err
+    }
+
+    // Go through all media descriptions and find the opus payload type
+    var opusPayloadType string
+    for _, mediaDescription := range sessionDescription.MediaDescriptions {
+        for _, attribute := range mediaDescription.Attributes {
+            // Extract the opus payload type
+            if attribute.Key == "rtpmap" && strings.Contains(attribute.Value, "opus") {
+                opusPayloadType = strings.Split(attribute.Value, " ")[0]
+                break
+            }
+        }
+
+		// Extract SDPFmtpLine from the fmtp attribute
+        if opusPayloadType != "" {
+            for _, fmtpAttribute := range mediaDescription.Attributes {
+                if fmtpAttribute.Key == "fmtp" && strings.HasPrefix(fmtpAttribute.Value, opusPayloadType+" ") {
+                    // Remove the opus payload type from the fmtp attribute
+                    return strings.TrimPrefix(fmtpAttribute.Value, opusPayloadType+" "), nil
+                }
+            }
+        }
+    }
+    return "", nil
+}
+
+func ExtractRTCPFeedbackFromSDP(sdpStr string) ([]webrtc.RTCPFeedback, error) {
+    sessionDescription := sdp.SessionDescription{}
+    err := sessionDescription.Unmarshal([]byte(sdpStr))
+    if err != nil {
+        return nil, err
+    }
+
+    var feedbacks []webrtc.RTCPFeedback
+    for _, mediaDescription := range sessionDescription.MediaDescriptions {
+        for _, attribute := range mediaDescription.Attributes {
+            if attribute.Key == "rtcp-fb" {
+                parts := strings.SplitN(attribute.Value, " ", 2)
+                feedback := webrtc.RTCPFeedback{Type: parts[0]}
+                if len(parts) > 1 {
+                    feedback.Parameter = parts[1]
+                }
+                feedbacks = append(feedbacks, feedback)
+            }
+        }
+    }
+    return feedbacks, nil
+}
 
 // Create a PeerConnection
 func createPeerConnection(stunServers []stunServers, turnServers []turnServers, sdpOffer string) (*webrtc.PeerConnection, error) {
+
+	// Extract the clock rate, channels, fmtp and rtcp feedback from the sdp offer
+	clockRate, err := ExtractClockRateFromSDP(sdpOffer)
+	if err != nil {
+		return nil, errors.New("failed to extract clock rate from sdp offer: " + err.Error())
+	}
+
+	channels, err := ExtractChannelsFromSDP(sdpOffer)
+	if err != nil {
+		return nil, errors.New("failed to extract channels from sdp offer: " + err.Error())
+	}
+
+	fmtpValue, err := ExtractFmtpFromSDP(sdpOffer)
+	if err != nil {
+		return nil, errors.New("failed to extract fmtp from sdp offer: " + err.Error())
+	}
+
+	rtcpFeedback, err := ExtractRTCPFeedbackFromSDP(sdpOffer)
+	if err != nil {
+		return nil, errors.New("failed to extract rtcp feedback from sdp offer: " + err.Error())
+	}
+
+
+	fmt.Println("clockRate:", clockRate)
+	fmt.Println("channels:", channels)
+	fmt.Println("fmtpValue:", fmtpValue)
+	fmt.Println("rtcpFeedback:", rtcpFeedback)
+
+	// Setup the codecs
+	m := &webrtc.MediaEngine{}
+	if err := m.RegisterCodec(webrtc.RTPCodecParameters{
+		RTPCodecCapability: webrtc.RTPCodecCapability{
+			MimeType: webrtc.MimeTypeOpus, 
+			ClockRate: clockRate, 
+			Channels: channels, 
+			SDPFmtpLine: fmtpValue, 
+			RTCPFeedback: rtcpFeedback,
+		},
+	}, webrtc.RTPCodecTypeAudio); err != nil {
+		panic(err)
+	}
+
+	// Create a InterceptorRegistry. This is the user configurable RTP/RTCP Pipeline.
+	// This provides NACKs, RTCP Reports and other features. If you use `webrtc.NewPeerConnection`
+	// this is enabled by default. If you are manually managing You MUST create a InterceptorRegistry
+	// for each PeerConnection.
+	i := &interceptor.Registry{}
+
+	// Use the default set of Interceptors
+	if err := webrtc.RegisterDefaultInterceptors(m, i); err != nil {
+		panic(err)
+	}
+
+	// Create the API object with the MediaEngine
+	webrtcapi := webrtc.NewAPI(webrtc.WithMediaEngine(m), webrtc.WithInterceptorRegistry(i))
+
 	// Create ice servers
     iceServers := []webrtc.ICEServer{}
 
@@ -190,7 +390,7 @@ func createPeerConnection(stunServers []stunServers, turnServers []turnServers, 
     }
 
 	// Create a new RTCPeerConnection
-	peerConnection, err := webrtc.NewPeerConnection(webrtc.Configuration{
+	peerConnection, err := webrtcapi.NewPeerConnection(webrtc.Configuration{
 		ICEServers: iceServers,
 	})
 	if err != nil {
@@ -488,80 +688,4 @@ func pingloop(wscon *websocket.Conn) chan bool {
 	}()
 
 	return stopChan
-}
-
-
-
-
-
-
-// Connect to the TURN server as a client
-func connectToTurnServer(turnServer turnServers) error {
-    // Split the URL into host and port
-    u, err := url.Parse(turnServer.URL)
-    if err != nil {
-        return fmt.Errorf("failed to parse TURN server URL: %v", err)
-    }
-
-	host, _, err := net.SplitHostPort(u.Opaque)
-	if err != nil {
-		return fmt.Errorf("failed to parse TURN server URL: %v", err)
-	}
-    turnServerAddr := u.Opaque
-
-
-	// Create a local listening socket
-    conn, err := net.ListenPacket("udp4", "0.0.0.0:0")
-    if err != nil {
-        return fmt.Errorf("failed to create local listening socket: %v", err)
-    }
-    defer conn.Close()
-
-
-	// Create a Client
-    loggerFactory := logging.NewDefaultLoggerFactory()
-    loggerFactory.DefaultLogLevel = logging.LogLevelTrace // Setzen Sie das LogLevel auf Trace für detaillierte Protokolle
-    cfg := &turn.ClientConfig{
-        STUNServerAddr: turnServerAddr,
-        TURNServerAddr: turnServerAddr,
-        Conn:           conn,
-        Username:       turnServer.Username,
-        Password:       turnServer.Password,
-        Realm:          host, // Nehmen Sie den Host ohne Port als Realm
-        LoggerFactory:  loggerFactory,
-    }
-
-    client, err := turn.NewClient(cfg)
-    if err != nil {
-        return fmt.Errorf("failed to create TURN client: %v", err)
-    }
-    defer client.Close()
-
-
-    // Start listening on the conn provided.
-    err = client.Listen()
-    if err != nil {
-        return fmt.Errorf("TURN client failed to listen: %v", err)
-    }
-
-	con, err := client.SendBindingRequest()
-	if err != nil {
-		return fmt.Errorf("TURN client failed to send binding request: %v", err)
-	}
-
-	fmt.Println(con.String())
-
-	
-    // // Allocate a relay socket on the TURN server. On success, it
-    // // will return a net.PacketConn which represents the remote
-    // // socket.
-    // relayConn, err := client.Allocate()
-    // if err != nil {
-    //     return fmt.Errorf("TURN client failed to allocate: %v", err)
-    // }
-    // defer relayConn.Close()
-
-    // fmt.Printf("Connected to TURN server. Relayed address: %s", relayConn.LocalAddr().String())
-
-    return nil
 }
