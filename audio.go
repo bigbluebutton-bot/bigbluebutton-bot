@@ -225,7 +225,7 @@ func ExtractClockRateFromSDP(sdpStr string) (uint32, error) {
             if attribute.Key == "rtpmap" && strings.Contains(attribute.Value, "opus") {
                 parts := strings.Split(attribute.Value, "/")
                 if len(parts) > 1 {
-                    clock, err := strconv.Atoi(parts[1])
+					clock, err := strconv.ParseUint(parts[1], 10, 32)
 					if err != nil {
 						return 0, err
 					}
@@ -248,7 +248,7 @@ func ExtractChannelsFromSDP(sdpStr string) (uint16, error) {
             if attribute.Key == "rtpmap" && strings.Contains(attribute.Value, "opus") {
                 parts := strings.Split(attribute.Value, "/")
                 if len(parts) > 2 {
-                    channels, err := strconv.Atoi(parts[2])
+                    channels, err := strconv.ParseUint(parts[2], 10, 16)
 					if err != nil {
 						return 0, err
 					}
