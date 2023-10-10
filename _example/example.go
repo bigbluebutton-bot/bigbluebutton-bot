@@ -12,6 +12,10 @@ import (
 	bot "github.com/ITLab-CC/bigbluebutton-bot"
 
 	bbb "github.com/ITLab-CC/bigbluebutton-bot/bbb"
+
+	"github.com/pion/rtp"
+	"github.com/pion/webrtc/v3"
+	"github.com/pion/webrtc/v4/pkg/media/oggwriter"
 )
 
 type configAPI struct {
@@ -177,35 +181,79 @@ func main() {
 		panic(err)
 	}
 
-	// enCapture, err := client.CreateCapture("en")
-	// if err != nil {
-	// 	panic(err)
-	// }
+	enCapture, err := client.CreateCapture("en")
+	if err != nil {
+		panic(err)
+	}
 
-	// time.Sleep(2 * time.Second)
+	time.Sleep(2 * time.Second)
 
-	// err = enCapture.SendText("Hello")
-	// if err != nil {
-	// 	panic(err)
-	// }
+	err = enCapture.SendText("Hello")
+	if err != nil {
+		panic(err)
+	}
 
-	// time.Sleep(2 * time.Second)
+	time.Sleep(2 * time.Second)
 
-	// err = enCapture.SendText(" world")
-	// if err != nil {
-	// 	panic(err)
-	// }
-
-	// time.Sleep(2000 * time.Second)
-
-
-	err = client.ListenToAudio()
+	err = enCapture.SendText(" world")
 	if err != nil {
 		panic(err)
 	}
 
 
-	time.Sleep(5000 * time.Second)
+	audio := client.CreateAudioChannel()
+
+	err = audio.ListenToAudio()
+	if err != nil {
+		panic(err)
+	}
+
+	oggFile, err := oggwriter.New("audio_output.ogg", 48000, 2)
+	if err != nil {
+		panic(err)
+	}
+	defer oggFile.Close()
+
+	audio.OnTrack(func(status *bot.StatusType, track *webrtc.TrackRemote, receiver *webrtc.RTPReceiver) {
+		// Only handle audio tracks
+		if track.Kind() != webrtc.RTPCodecTypeAudio {
+			return
+		}
+	
+		go func() {
+			buffer := make([]byte, 1500)
+			for {
+				n, _, readErr := track.Read(buffer)
+
+				if *status == bot.DISCONNECTED {
+					return
+				}
+
+				if readErr != nil {
+					fmt.Println("Error during audio track read:", readErr)
+					return
+				}
+	
+				rtpPacket := &rtp.Packet{}
+				if err := rtpPacket.Unmarshal(buffer[:n]); err != nil {
+					fmt.Println("Error during RTP packet unmarshal:", err)
+					return
+				}
+	
+				if err := oggFile.WriteRTP(rtpPacket); err != nil {
+					fmt.Println("Error during OGG file write:", err)
+					return
+				}
+			}
+		}()
+	})
+
+
+	time.Sleep(20 * time.Second)
+
+	if err := audio.Close(); err != nil {
+		panic(err)
+	}
 
 	
 

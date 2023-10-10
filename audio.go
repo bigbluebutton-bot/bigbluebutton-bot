@@ -14,18 +14,39 @@ import (
 	"time"
 
 	"github.com/pion/interceptor"
-	"github.com/pion/rtp"
 
 	"github.com/pion/sdp/v3"
 	"github.com/pion/webrtc/v3"
 
 	"github.com/gorilla/websocket"
-	"github.com/pion/webrtc/v4/pkg/media/oggwriter"
+
 
 )
 
+type AudioClient struct {
+	Client
+	peerConnection *webrtc.PeerConnection
+
+	pingStopChan chan bool
+
+	status StatusType
+}
+
+func (c* Client) CreateAudioChannel() (*AudioClient) {
+	return &AudioClient{
+		Client: *c,
+		peerConnection: nil,
+
+		pingStopChan: nil,
+
+		status: DISCONNECTED,
+	}
+}
+
 // ListenToAudio joins the audio channel of the meeting and starts listening to the audio stream.
-func (c *Client) ListenToAudio() error {
+func (c *AudioClient) ListenToAudio() error {
+
+	c.status = CONNECTING
 
 	// Get the STUN and TURN servers
 	stunServers, turnServers, err := c.GetStunTurnServers()
@@ -39,7 +60,7 @@ func (c *Client) ListenToAudio() error {
 
 	// Make api request to get all information of this meeting (VoiceBridge, CaleeName, UserID, UserName)
 	meetings, err := c.API.GetMeetings()
-	 if err != nil {
+	if err != nil {
 		return err
 	}
 	meeting := meetings[c.ExternalMeetingID]
@@ -70,13 +91,13 @@ func (c *Client) ListenToAudio() error {
 
 
 	// Create a PeerConnection and set the remote description (sdpAnswer)
-	peerConnection, err := createPeerConnection(stunServers, turnServers, sdpOffer)
+	c.peerConnection, err = createPeerConnection(stunServers, turnServers, sdpOffer)
 	if err != nil {
 		return err
 	}
 
 	// Generate SDP-Offer
-	sdpAnswer, err := generateSDPAnswer(peerConnection)
+	sdpAnswer, err := generateSDPAnswer(c.peerConnection)
 	if err != nil {
 		return err
 	}
@@ -91,10 +112,7 @@ func (c *Client) ListenToAudio() error {
 
 
 	// Start ping loop
-	pingStopChan := pingloop(wscon)
-	defer func() {
-		pingStopChan <- true
-	}()
+	c.pingStopChan = pingloop(wscon)
 
 
 	// Read SDP answer
@@ -106,52 +124,35 @@ func (c *Client) ListenToAudio() error {
 		return errors.New("status response was not successful. Unable to establish webrtc audio connection. ID: " + status.ID + " ,Type: " + status.Type + " ,Success: " + status.Success)
 	}
 
-
-	
-	oggFile, err := oggwriter.New("audio_output.ogg", 48000, 2)
-	if err != nil {
-		return err
-	}
-	defer oggFile.Close()
-
-	peerConnection.OnTrack(func(track *webrtc.TrackRemote, receiver *webrtc.RTPReceiver) {
-		// Only handle audio tracks
-		if track.Kind() != webrtc.RTPCodecTypeAudio {
-			return
-		}
-	
-		go func() {
-			buffer := make([]byte, 1500)
-			for {
-				n, _, readErr := track.Read(buffer)
-				if readErr != nil {
-					fmt.Println("Error during audio track read:", readErr)
-					return
-				}
-	
-				rtpPacket := &rtp.Packet{}
-				if err := rtpPacket.Unmarshal(buffer[:n]); err != nil {
-					fmt.Println("Error during RTP packet unmarshal:", err)
-					return
-				}
-	
-				if err := oggFile.WriteRTP(rtpPacket); err != nil {
-					fmt.Println("Error during OGG file write:", err)
-					return
-				}
-			}
-		}()
-	})
-	
-
-
-
-	time.Sleep(20 * time.Second)
+	c.status = CONNECTED
 
 	return nil
 }
 
 
+func (c* AudioClient) Close() error {
+
+	c.status = DISCONNECTING
+
+	if err := c.peerConnection.Close(); err != nil {
+		return err
+	}
+
+	c.pingStopChan <- true
+
+	c.status = DISCONNECTED
+
+	return nil
+}
+
+
+
+func (c *AudioClient) OnTrack(onfunc func(*StatusType, *webrtc.TrackRemote, *webrtc.RTPReceiver)) error {
+	c.peerConnection.OnTrack(func(track *webrtc.TrackRemote, receiver *webrtc.RTPReceiver) {
+		onfunc(&c.status, track, receiver)
+	})
+	return nil
+}
 
 
 // STUN and TURN servers
@@ -173,7 +174,7 @@ type turnServers struct {
 }
 
 // GetStunTurnServers returns the STUN and TURN servers of the bbb server.
-func (c *Client) GetStunTurnServers() ([]stunServers, []turnServers, error) {
+func (c *AudioClient) GetStunTurnServers() ([]stunServers, []turnServers, error) {
 
 	var stunTurns stunTurns
 
