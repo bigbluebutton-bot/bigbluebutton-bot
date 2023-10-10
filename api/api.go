@@ -21,9 +21,9 @@ const (
 )
 
 type ApiRequest struct {
-	url     string
-	secret  string
-	shatype SHA
+	Url     string
+	Secret  string
+	Shatype SHA
 }
 
 // Create an object for making http get api requests to the BBB server.
@@ -54,9 +54,9 @@ func NewRequest(url string, secret string, shatype SHA) (*ApiRequest, error) {
 	}
 
 	return &ApiRequest{
-		url:     url,
-		secret:  secret,
-		shatype: shatype,
+		Url:     url,
+		Secret:  secret,
+		Shatype: shatype,
 	}, nil
 }
 
@@ -145,7 +145,7 @@ func (api *ApiRequest) buildParams(params ...params) string {
 // Generate the checksum for a api request.
 // The checksum is generated with the sha1 or sha256 algorithm.
 func (api *ApiRequest) generateChecksum(action action, params string) string {
-	if api.shatype == SHA1 {
+	if api.Shatype == SHA1 {
 		return api.generateChecksumSHA1(action, params)
 	} else {
 		return api.generateChecksumSHA256(action, params)
@@ -156,7 +156,7 @@ func (api *ApiRequest) generateChecksum(action action, params string) string {
 func (api ApiRequest) generateChecksumSHA256(action action, params string) string {
 	//Generate sha256 and sha1 checksum
 	checksum := sha256.New()
-	checksum.Write([]byte(string(action) + params + api.secret))
+	checksum.Write([]byte(string(action) + params + api.Secret))
 	return hex.EncodeToString(checksum.Sum(nil))
 }
 
@@ -164,7 +164,7 @@ func (api ApiRequest) generateChecksumSHA256(action action, params string) strin
 func (api *ApiRequest) generateChecksumSHA1(action action, params string) string {
 	//Generate sha256 and sha1 checksum
 	checksum := sha1.New()
-	checksum.Write([]byte(string(action) + params + api.secret))
+	checksum.Write([]byte(string(action) + params + api.Secret))
 	return hex.EncodeToString(checksum.Sum(nil))
 }
 
@@ -189,9 +189,9 @@ func (api *ApiRequest) buildURL(action action, params ...params) string {
 
 	var url string
 	if len([]rune(param)) > 0 {
-		url = api.url + string(action) + string("?") + param + string("&checksum=") + checksum
+		url = api.Url + string(action) + string("?") + param + string("&checksum=") + checksum
 	} else {
-		url = api.url + string(action) + string("?checksum=") + checksum
+		url = api.Url + string(action) + string("?checksum=") + checksum
 	}
 
 	return url

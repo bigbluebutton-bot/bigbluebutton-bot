@@ -32,8 +32,7 @@ type Client struct {
 	ClientWSURL string
 	PadURL      string
 	PadWSURL    string
-	ApiURL      string
-	apiSecret   string
+	WebRTCWSURL string
 	// to make api requests to the BBB-server
 	API *api.ApiRequest
 
@@ -47,12 +46,14 @@ type Client struct {
 	JoinURL           string
 	SessionCookie     []*http.Cookie
 	InternalUserID    string
+	UserName		  string
 	AuthToken         string
 	SessionToken      string
+	ExternalMeetingID string
 	InternalMeetingID string
 }
 
-func NewClient(clientURL string, clientWSURL string, padURL string, padWSURL string, apiURL string, apiSecret string) (*Client, error) {
+func NewClient(clientURL string, clientWSURL string, padURL string, padWSURL string, apiURL string, apiSecret string, webRTCWSURL string) (*Client, error) {
 	api, err := api.NewRequest(apiURL, apiSecret, api.SHA256)
 	if err != nil {
 		return nil, err
@@ -67,8 +68,7 @@ func NewClient(clientURL string, clientWSURL string, padURL string, padWSURL str
 		ClientWSURL: clientWSURL,
 		PadURL:      padURL,
 		PadWSURL:    padWSURL,
-		ApiURL:      apiURL,
-		apiSecret:   apiSecret,
+		WebRTCWSURL: webRTCWSURL,
 
 		ddpClient: ddpClient,
 
@@ -95,8 +95,10 @@ func (c *Client) Join(meetingID string, userName string, moderator bool) error {
 	c.JoinURL = joinURL
 	c.SessionCookie = coockie
 	c.InternalUserID = internalUserID
+	c.UserName = userName
 	c.AuthToken = authToken
 	c.SessionToken = sessionToken
+	c.ExternalMeetingID = meetingID
 	c.InternalMeetingID = internalMeetingID
 
 	// Connect to the DDP server

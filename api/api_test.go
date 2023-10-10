@@ -86,9 +86,9 @@ func TestNewRequest(t *testing.T) {
 			secret:  "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
 			shatype: SHA256,
 			expected: ApiRequest{
-				url:     "https://example.com/api/",
-				secret:  "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-				shatype: SHA256,
+				Url:     "https://example.com/api/",
+				Secret:  "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+				Shatype: SHA256,
 			},
 			shouldfail: false,
 		},
@@ -97,9 +97,9 @@ func TestNewRequest(t *testing.T) {
 			secret:  "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
 			shatype: SHA1,
 			expected: ApiRequest{
-				url:     "https://example.com/api/",
-				secret:  "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-				shatype: SHA1,
+				Url:     "https://example.com/api/",
+				Secret:  "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+				Shatype: SHA1,
 			},
 			shouldfail: false,
 		},
@@ -108,9 +108,9 @@ func TestNewRequest(t *testing.T) {
 			secret:  "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
 			shatype: SHA256,
 			expected: ApiRequest{
-				url:     "http://example.com/api/",
-				secret:  "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-				shatype: SHA256,
+				Url:     "http://example.com/api/",
+				Secret:  "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+				Shatype: SHA256,
 			},
 			shouldfail: false,
 		},
@@ -125,9 +125,9 @@ func TestNewRequest(t *testing.T) {
 			secret:  "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
 			shatype: "bla",
 			expected: ApiRequest{
-				url:     "https://example.com/api/",
-				secret:  "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-				shatype: SHA256,
+				Url:     "https://example.com/api/",
+				Secret:  "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+				Shatype: SHA256,
 			},
 			shouldfail: false,
 		},
@@ -265,7 +265,7 @@ func TestGenerateChecksum(t *testing.T) {
 			if test.shouldfail {
 				t.Logf("generateChecksumSHA1(%s,...) %d PASSED", test.action, num)
 			} else {
-				t.Errorf("generateChecksumSHA1(%s,...) %d FAILED: Cheksum is wrong: %s", test.action, num, bbbapi_sha1.url+string(test.action)+"?"+params+"&checksum="+resultsha1)
+				t.Errorf("generateChecksumSHA1(%s,...) %d FAILED: Cheksum is wrong: %s", test.action, num, bbbapi_sha1.Url+string(test.action)+"?"+params+"&checksum="+resultsha1)
 			}
 		} else {
 			t.Logf("generateChecksumSHA1(%s,...) %d PASSED", test.action, num)
@@ -277,7 +277,7 @@ func TestGenerateChecksum(t *testing.T) {
 			if test.shouldfail {
 				t.Logf("generateChecksumSHA256(%s,...) %d PASSED", test.action, num)
 			} else {
-				t.Errorf("generateChecksumSHA256(%s,...) %d FAILED: Cheksum is wrong: %s", test.action, num, bbbapi_sha256.url+string(test.action)+"?"+params+"&checksum="+resultsha256)
+				t.Errorf("generateChecksumSHA256(%s,...) %d FAILED: Cheksum is wrong: %s", test.action, num, bbbapi_sha256.Url+string(test.action)+"?"+params+"&checksum="+resultsha256)
 			}
 		} else {
 			t.Logf("generateChecksumSHA256(%s,...) %d PASSED", test.action, num)
