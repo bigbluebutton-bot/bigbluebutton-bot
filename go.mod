@@ -8,11 +8,9 @@ require (
 	github.com/gopackage/ddp v0.0.6
 	github.com/gorilla/websocket v1.5.0
 	github.com/pion/interceptor v0.1.22
-	github.com/pion/rtp v1.8.2
 	github.com/pion/sdp/v3 v3.0.6
 	github.com/pion/webrtc/v3 v3.2.20
-	github.com/pion/webrtc/v4 v4.0.0-beta.5
-	golang.org/x/net v0.16.0
+	golang.org/x/net v0.17.0
 	google.golang.org/grpc v1.57.0
 	google.golang.org/protobuf v1.31.0
 	gopkg.in/src-d/go-git.v4 v4.13.1
@@ -36,6 +34,7 @@ require (
 	github.com/pion/mdns v0.0.8 // indirect
 	github.com/pion/randutil v0.1.0 // indirect
 	github.com/pion/rtcp v1.2.10 // indirect
+	github.com/pion/rtp v1.8.2 // indirect
 	github.com/pion/sctp v1.8.9 // indirect
 	github.com/pion/srtp/v2 v2.0.17 // indirect
 	github.com/pion/stun v0.6.1 // indirect
