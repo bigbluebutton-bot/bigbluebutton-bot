@@ -19,10 +19,12 @@ The bot aims to utilize all the functionalities that a regular Big Blue Button u
 
 **Linux:**
 1. Open your terminal.
-2. Use your package manager to install Node.js. For example, on Debian/Ubuntu:
+2. Use [Node Version Manager](https://github.com/nvm-sh/nvm) to install Node.js:
    ```bash
-   sudo apt update
-   sudo apt install nodejs npm
+   curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.5/install.sh | bash
+   export NVM_DIR="$([ -z "${XDG_CONFIG_HOME-}" ] && printf %s "${HOME}/.nvm" || printf %s "${XDG_CONFIG_HOME}/nvm")"
+   [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" # This loads nvm
+   nvm install node
    ```
 
 **macOS:**
@@ -78,6 +80,9 @@ Create a `config.json` file and insert the following configuration:
         "pad": {
             "url": "https://example.com/pad/",
             "ws": "wss://example.com/pad/"
+        },
+        "webrtc": {
+            "ws": "wss://example.com/bbb-webrtc-sfu"
         }
     }
 }
@@ -89,7 +94,7 @@ To retrieve the Big Blue Button secret/salt, execute the following command on th
 1. Copy the `example.go` file from the `_example` directory.
 2. Execute the following commands:
    ```go
-   go mod init bbb-bot-test
+   go mod init bbb-bot
    go mod tidy
    go run .
    ```
