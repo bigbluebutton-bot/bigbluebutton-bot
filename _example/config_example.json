@@ -11,7 +11,10 @@
         },
         "pad": {
             "url": "https://example.com/pad/",
-            "ws": "wss://example.com/pad/websocket"
+            "ws": "wss://example.com/pad/"
+        },
+        "webrtc": {
+            "ws": "wss://example.com/bbb-webrtc-sfu"
         }
     }
 }
