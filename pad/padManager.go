@@ -116,7 +116,7 @@ func (p *Pad) RegisterSession() error {
 func (p *Pad) Connect() error {
 
 	// Create changeset client and start server
-	p.ChangesetClient = NewChangesetClient("localhost", "50051")
+	p.ChangesetClient = NewChangesetClient("localhost", "5051")
 
 	// Start changeset server
 	if err := p.ChangesetClient.StartChangesetServer(); err != nil {
