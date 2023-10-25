@@ -17,6 +17,7 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 
 	git "gopkg.in/src-d/go-git.v4" // with go modules disabled
+	"google.golang.org/grpc/connectivity"
 )
 
 type ChangesetClient struct {
@@ -185,6 +186,9 @@ func (cc *ChangesetClient) StartChangesetServer() error {
 	// try to connect 10 times
 	for i := 0; i < 10; i++ {
 		err = cc.autoConnect()
+		if err != nil {
+			fmt.Println("could not connect to changeset server: ", err)
+		}
 		// send ping
 		_, err = cc.client.Ping(cc.ctx, &ch.Nothing{})
 		if err == nil {
@@ -215,7 +219,6 @@ func (cc *ChangesetClient) Connect() error {
 		return fmt.Errorf("did not connect: %v", err)
 	}
 	cc.client = ch.NewChangesetClient(cc.conn)
-	cc.ctx, cc.cancel = context.WithTimeout(context.Background(), time.Second * 5)
 	return nil
 }
 
@@ -226,8 +229,15 @@ func (cc *ChangesetClient) Close() {
 
 func (cc *ChangesetClient) autoConnect() error {
 	if cc.conn == nil {
-		return cc.Connect()
+		err := cc.Connect()
+		if err != nil {
+			return err
+		}
 	}
+	if cc.conn.GetState() != connectivity.Ready {
+		cc.conn.Connect()
+	}
+	cc.ctx, cc.cancel = context.WithTimeout(context.Background(), time.Second * 5)
 	return nil
 }
 
