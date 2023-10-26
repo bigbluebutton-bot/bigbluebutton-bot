@@ -292,10 +292,10 @@ type padTyping struct {
 	Data      padTypingData `json:"data"`
 }
 
-func (p *Pad) SendText(text string) error {
+func (p *Pad) SetText(text string) error {
 
-	newtext := strings.TrimSuffix(p.Text, "\n") + text
-	oldtext := strings.TrimSuffix(p.Text, "\n") + "\n"
+	newtext := text
+	oldtext := p.Text
 
 	fmt.Println("Old text: ", oldtext)
 	fmt.Println("New text: ", newtext)
@@ -308,7 +308,7 @@ func (p *Pad) SendText(text string) error {
 
 	fmt.Println("Generated changeset: ", changeset)
 
-	p.Text = strings.TrimSuffix(p.Text, "\n") + text + "\n"
+	p.Text = text
 	// "Z:1>5*0+5$Hello"
 	// "Z:1>4|+4$ello"
 	// "Z:1>5|=1+5$Hello"
