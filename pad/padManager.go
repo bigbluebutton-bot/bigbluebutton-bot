@@ -295,7 +295,7 @@ type padTyping struct {
 func (p *Pad) SetText(text string) error {
 
 	newtext := text
-	oldtext := strings.TrimSuffix(p.Text, "\n") + "\n"
+	oldtext := p.Text
 
 	fmt.Println("Old text: ", oldtext)
 	fmt.Println("New text: ", newtext)
@@ -308,7 +308,7 @@ func (p *Pad) SetText(text string) error {
 
 	fmt.Println("Generated changeset: ", changeset)
 
-	p.Text = text + "\n"
+	p.Text = text
 	// "Z:1>5*0+5$Hello"
 	// "Z:1>4|+4$ello"
 	// "Z:1>5|=1+5$Hello"

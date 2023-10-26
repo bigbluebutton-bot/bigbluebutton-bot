@@ -106,21 +106,21 @@ func main() {
 		panic(err)
 	}
 
-	time.Sleep(2 * time.Second)
+	time.Sleep(1 * time.Second)
 
 	err = enCapture.SetText("Hello")
 	if err != nil {
 		panic(err)
 	}
 
-	time.Sleep(10 * time.Second)
+	time.Sleep(1 * time.Second)
 
 	err = enCapture.SetText("Hello world")
 	if err != nil {
 		panic(err)
 	}
 
-	time.Sleep(10 * time.Second)
+	time.Sleep(1 * time.Second)
 
 	err = enCapture.SetText("Hollo world")
 	if err != nil {
