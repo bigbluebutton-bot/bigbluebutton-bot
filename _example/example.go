@@ -108,18 +108,24 @@ func main() {
 
 	time.Sleep(2 * time.Second)
 
-	err = enCapture.SendText("Hello")
+	err = enCapture.SetText("Hello")
 	if err != nil {
 		panic(err)
 	}
 
-	time.Sleep(2 * time.Second)
+	time.Sleep(10 * time.Second)
 
-	err = enCapture.SendText(" world")
+	err = enCapture.SetText("Hello world")
 	if err != nil {
 		panic(err)
 	}
 
+	time.Sleep(10 * time.Second)
+
+	err = enCapture.SetText("Hollo world")
+	if err != nil {
+		panic(err)
+	}
 
 	audio := client.CreateAudioChannel()
 
@@ -191,11 +197,11 @@ func main() {
 
 
 
-	endedmeeting, err := bbbapi.EndMeeting(newmeeting.MeetingID)
-	if err != nil {
-		panic(err)
-	}
-	fmt.Printf("Meeting \"%s\" was ended.\n", endedmeeting.MeetingName)
+	// endedmeeting, err := bbbapi.EndMeeting(newmeeting.MeetingID)
+	// if err != nil {
+	// 	panic(err)
+	// }
+	// fmt.Printf("Meeting \"%s\" was ended.\n", endedmeeting.MeetingName)
 
 
 
