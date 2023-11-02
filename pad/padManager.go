@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/http/cookiejar"
 	"net/url"
+	"strconv"
 	"strings"
 
 	goSocketio "github.com/JulianKropp/golang-socketio"
@@ -35,6 +36,7 @@ type Pad struct {
 	BaseRev   int
 	LocationX int
 
+	ChangesetServerExternal bool
 	ChangesetClient *ChangesetClient
 }
 
@@ -44,7 +46,7 @@ type Pad struct {
 // padId = g.9d4O2LRqTkIfh6bM$notes (from ddp. To get it c.ddpCall(bbb.GetPadIdCall, "en"))
 // sessionID = s.4918c0b0b9b7913b5e29334a50f58212 (from ddp. To get it padsSessionsCollection.FindAll())
 // cookie = client.SessionCookie
-func NewPad(url string, wsURL string, sessionToken string, padId string, sessionID string, cookie []*http.Cookie) *Pad {
+func NewPad(url string, wsURL string, sessionToken string, padId string, sessionID string, cookie []*http.Cookie, external bool, host string, port int) *Pad {
 	// Add sessionID cookies
 	if getCookieByName(cookie, "sessionID") == "" {
 		cookie = append(cookie, &http.Cookie{Name: "sessionID", Value: sessionID}) //add sessionID cookies
@@ -75,6 +77,9 @@ func NewPad(url string, wsURL string, sessionToken string, padId string, session
 
 		BaseRev:   0,
 		LocationX: 0,
+
+		ChangesetServerExternal: external,
+		ChangesetClient: NewChangesetClient(host, strconv.FormatInt(int64(port), 10)),
 	}
 }
 
@@ -115,12 +120,11 @@ func (p *Pad) RegisterSession() error {
 // Connect to the pad
 func (p *Pad) Connect() error {
 
-	// Create changeset client and start server
-	p.ChangesetClient = NewChangesetClient("localhost", "5051")
-
-	// Start changeset server
-	if err := p.ChangesetClient.StartChangesetServer(); err != nil {
-		return err
+	if !p.ChangesetServerExternal {
+		// Start changeset server
+		if err := p.ChangesetClient.StartChangesetServer(); err != nil {
+			return err
+		}
 	}
 
 	if err := p.RegisterSession(); err != nil {

@@ -23,7 +23,7 @@ func getCookieByName(cookies []*http.Cookie, name string) string {
 	return result
 }
 
-func (c *Client) CreateCapture(language string) (*pad.Pad, error) {
+func (c *Client) CreateCapture(language string, external bool, host string, port int) (*pad.Pad, error) {
 	//Subscribe to captions, pads and pads-sessions
 	//Subscribe to captions
 	if err := c.ddpSubscribe(bbb.CaptionsSub, nil); err != nil {
@@ -135,7 +135,7 @@ func (c *Client) CreateCapture(language string) (*pad.Pad, error) {
 	}
 	fmt.Println("sessionID: " + sessionID)
 
-	capturePad := pad.NewPad(c.PadURL, c.PadWSURL, c.SessionToken, padId, sessionID, c.SessionCookie)
+	capturePad := pad.NewPad(c.PadURL, c.PadWSURL, c.SessionToken, padId, sessionID, c.SessionCookie, external, host, port)
 	if err := capturePad.Connect(); err != nil {
 		return nil, err
 	}
@@ -146,11 +146,11 @@ type captureListener func()
 
 // OnCapture in order to receive Capture changes.
 func (c *Client) OnCapture(language string, listener captureListener) error {
-	if c.events["OnCapture"] == nil {
-		c.CreateCapture(language)
-	}
+	// if c.events["OnCapture"] == nil {
+	// 	c.CreateCapture(language)
+	// }
 
-	c.events["OnCapture"] = append(c.events["OnCapture"], listener)
+	// c.events["OnCapture"] = append(c.events["OnCapture"], listener)
 
 	return nil
 }

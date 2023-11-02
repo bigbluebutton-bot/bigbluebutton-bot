@@ -156,7 +156,7 @@ func (cc *ChangesetClient) StartChangesetServer() error {
 	}
 
 	// Command to execute and start the changeset server
-	cc.changsetServerProcess = exec.Command("node", "server.js", "0.0.0.0", cc.port)
+	cc.changsetServerProcess = exec.Command("node", "server.js", cc.ip, cc.port)
 	cc.changsetServerProcess.Dir = cc.Changsetserverpath
 	cc.changsetServerProcess.Stdout = os.Stdout
 	cc.changsetServerProcess.Stderr = os.Stderr

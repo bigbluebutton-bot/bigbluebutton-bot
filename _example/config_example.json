@@ -1,20 +1,25 @@
 {
-    "bbb": {
-        "api": {
-            "url": "https://example.com/bigbluebutton/api/",
-            "secret": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-            "sha": "SHA256"
-        },
-        "client": {
-            "url": "https://example.com/html5client/",
-            "ws": "wss://example.com/html5client/websocket"
-        },
-        "pad": {
-            "url": "https://example.com/pad/",
-            "ws": "wss://example.com/pad/"
-        },
-        "webrtc": {
-            "ws": "wss://example.com/bbb-webrtc-sfu"
-        }
+    "bbb":{
+       "api":{
+          "url":"https://example.com/bigbluebutton/api/",
+          "secret":"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+          "sha":"SHA256"
+       },
+       "client":{
+          "url":"https://example.com/html5client/",
+          "ws":"wss://example.com/html5client/websocket"
+       },
+       "pad":{
+          "url":"https://example.com/pad/",
+          "ws":"wss://example.com/pad/"
+       },
+       "webrtc":{
+          "ws":"wss://example.com/bbb-webrtc-sfu"
+       }
+    },
+    "changeset": {
+        "external": "false",
+        "host": "0.0.0.0",
+        "port": "5051"
     }
 }

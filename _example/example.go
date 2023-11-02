@@ -6,6 +6,7 @@ import (
 	"io"
 	"os"
 	"time"
+	"strconv"
 
 	api "github.com/ITLab-CC/bigbluebutton-bot/api"
 
@@ -101,7 +102,16 @@ func main() {
 		panic(err)
 	}
 
-	enCapture, err := client.CreateCapture("en")
+	chsetExternal, err := strconv.ParseBool(conf.ChangeSet.External)
+	if err != nil {
+		panic(err)
+	}
+	chsetHost := conf.ChangeSet.Host
+	chsetPort, err := strconv.Atoi(conf.ChangeSet.Port)
+	if err != nil {
+		panic(err)
+	}
+	enCapture, err := client.CreateCapture("en", chsetExternal, chsetHost, chsetPort)
 	if err != nil {
 		panic(err)
 	}
@@ -197,11 +207,11 @@ func main() {
 
 
 
-	// endedmeeting, err := bbbapi.EndMeeting(newmeeting.MeetingID)
-	// if err != nil {
-	// 	panic(err)
-	// }
-	// fmt.Printf("Meeting \"%s\" was ended.\n", endedmeeting.MeetingName)
+	endedmeeting, err := bbbapi.EndMeeting(newmeeting.MeetingID)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Printf("Meeting \"%s\" was ended.\n", endedmeeting.MeetingName)
 
 
 
@@ -228,6 +238,35 @@ func main() {
 
 
 
+
+/*
+{
+    "bbb":{
+       "api":{
+          "url":"https://example.com/bigbluebutton/api/",
+          "secret":"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+          "sha":"SHA256"
+       },
+       "client":{
+          "url":"https://example.com/html5client/",
+          "ws":"wss://example.com/html5client/websocket"
+       },
+       "pad":{
+          "url":"https://example.com/pad/",
+          "ws":"wss://example.com/pad/"
+       },
+       "webrtc":{
+          "ws":"wss://example.com/bbb-webrtc-sfu"
+       }
+    },
+    "changeset": {
+        "external": "false",
+        "host": "0.0.0.0",
+        "port": "5051"
+    }
+}
+*/
+
 type configAPI struct {
 	URL    string  `json:"url"`
 	Secret string  `json:"secret"`
@@ -249,42 +288,56 @@ type configWebRTC struct {
 }
 
 type configBBB struct {
-	API    configAPI	`json:"api"`
-	Client configClient	`json:"client"`
-	Pad configPad		`json:"pad"`
+	API    configAPI    `json:"api"`
+	Client configClient `json:"client"`
+	Pad    configPad    `json:"pad"`
 	WebRTC configWebRTC `json:"webrtc"`
 }
 
 type config struct {
 	BBB configBBB `json:"bbb"`
+	ChangeSet configChangeSet `json:"changeset"`
+}
+
+type configChangeSet struct {
+	External string   `json:"external"`
+	Host     string `json:"host"`
+	Port     string    `json:"port"`
 }
 
 func readConfig(file string) config {
 	// Try to read from env
-	conf := config {
+	conf := config{
 		BBB: configBBB{
 			API: configAPI{
-				URL: os.Getenv("BBB_API_URL"),
+				URL:    os.Getenv("BBB_API_URL"),
 				Secret: os.Getenv("BBB_API_SECRET"),
-				SHA: api.SHA(os.Getenv("BBB_API_SHA")),
+				SHA:    api.SHA(os.Getenv("BBB_API_SHA")),
 			},
 			Client: configClient{
 				URL: os.Getenv("BBB_CLIENT_URL"),
-				WS: os.Getenv("BBB_CLIENT_WS"),
+				WS:  os.Getenv("BBB_CLIENT_WS"),
 			},
 			Pad: configPad{
 				URL: os.Getenv("BBB_PAD_URL"),
-				WS: os.Getenv("BBB_PAD_WS"),
+				WS:  os.Getenv("BBB_PAD_WS"),
 			},
 			WebRTC: configWebRTC{
 				WS: os.Getenv("BBB_WEBRTC_WS"),
 			},
 		},
+		ChangeSet: configChangeSet{
+			External: os.Getenv("CHANGESET_EXTERNAL"),
+			Host:     os.Getenv("CHANGESET_HOST"),
+			Port:     os.Getenv("CHANGESET_PORT"),
+		},
 	}
 
-	if (conf.BBB.API.URL != "" && conf.BBB.API.Secret != "" && conf.BBB.API.SHA != "" &&
+	if conf.BBB.API.URL != "" && conf.BBB.API.Secret != "" && conf.BBB.API.SHA != "" &&
 		conf.BBB.Client.URL != "" && conf.BBB.Client.WS != "" &&
-		conf.BBB.Pad.URL != "" && conf.BBB.Pad.WS != ""){
+		conf.BBB.Pad.URL != "" && conf.BBB.Pad.WS != "" && 
+		conf.BBB.WebRTC.WS != "" && 
+		conf.ChangeSet.Host != "" && conf.ChangeSet.Port != "" {
 		fmt.Println("Using env variables for config")
 		return conf
 	}
@@ -292,18 +345,18 @@ func readConfig(file string) config {
 	// Open our jsonFile
 	jsonFile, err := os.Open(file)
 	// if we os.Open returns an error then handle it
-	if (err != nil) {
+	if err != nil {
 		fmt.Println(err)
 	}
 	// defer the closing of our jsonFile so that we can parse it later on
 	defer jsonFile.Close()
 	// read our opened jsonFile as a byte array.
 	byteValue, err := io.ReadAll(jsonFile)
-	if(err != nil) {
+	if err != nil {
 		panic(err)
 	}
 	// we unmarshal our byteArray which contains our jsonFile's content into conf
-	json.Unmarshal([]byte(byteValue), &conf) 
+	json.Unmarshal([]byte(byteValue), &conf)
 
 	return conf
 }
