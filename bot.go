@@ -1,14 +1,15 @@
 package bot
 
 import (
-	api "github.com/ITLab-CC/bigbluebutton-bot/api"
 	"errors"
 	"net/http"
 	"time"
 
+	api "github.com/bigbluebutton-bot/bigbluebutton-bot/api"
+
 	ddp "github.com/gopackage/ddp"
 
-	bbb "github.com/ITLab-CC/bigbluebutton-bot/bbb"
+	bbb "github.com/bigbluebutton-bot/bigbluebutton-bot/bbb"
 )
 
 type StatusType string
@@ -46,7 +47,7 @@ type Client struct {
 	JoinURL           string
 	SessionCookie     []*http.Cookie
 	InternalUserID    string
-	UserName		  string
+	UserName          string
 	AuthToken         string
 	SessionToken      string
 	ExternalMeetingID string

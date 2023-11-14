@@ -7,8 +7,8 @@ import (
 	"reflect"
 	"time"
 
-	bbb "github.com/ITLab-CC/bigbluebutton-bot/bbb"
-	"github.com/ITLab-CC/bigbluebutton-bot/pad"
+	bbb "github.com/bigbluebutton-bot/bigbluebutton-bot/bbb"
+	"github.com/bigbluebutton-bot/bigbluebutton-bot/pad"
 
 	convert "github.com/benpate/convert"
 )

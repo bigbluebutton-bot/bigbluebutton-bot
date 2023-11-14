@@ -5,14 +5,14 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"time"
 	"strconv"
+	"time"
 
-	api "github.com/ITLab-CC/bigbluebutton-bot/api"
+	api "github.com/bigbluebutton-bot/bigbluebutton-bot/api"
 
-	bot "github.com/ITLab-CC/bigbluebutton-bot"
+	bot "github.com/bigbluebutton-bot/bigbluebutton-bot"
 
-	bbb "github.com/ITLab-CC/bigbluebutton-bot/bbb"
+	bbb "github.com/bigbluebutton-bot/bigbluebutton-bot/bbb"
 
 	"github.com/pion/rtp"
 	"github.com/pion/webrtc/v3"
@@ -28,7 +28,6 @@ func main() {
 		panic(err)
 	}
 
-
 	//API-Requests
 	newmeeting, err := bbbapi.CreateMeeting("name", "meetingID", "attendeePW", "moderatorPW", "welcome text", false, false, false, 12345)
 	if err != nil {
@@ -36,11 +35,7 @@ func main() {
 	}
 	fmt.Printf("New meeting \"%s\" was created.\n", newmeeting.MeetingName)
 
-
-
 	fmt.Println("-----------------------------------------------")
-
-
 
 	fmt.Println("All meetings:")
 	meetings, err := bbbapi.GetMeetings()
@@ -52,11 +47,7 @@ func main() {
 		fmt.Println(bbbapi.IsMeetingRunning(meeting.MeetingID))
 	}
 
-
-
 	fmt.Println("-----------------------------------------------")
-
-
 
 	url, err := bbbapi.JoinGetURL(newmeeting.MeetingID, "TestUser", true)
 	if err != nil {
@@ -66,11 +57,7 @@ func main() {
 
 	time.Sleep(1 * time.Second)
 
-
-
 	fmt.Println("-----------------------------------------------")
-
-
 
 	client, err := bot.NewClient(conf.BBB.Client.URL, conf.BBB.Client.WS, conf.BBB.Pad.URL, conf.BBB.Pad.WS, conf.BBB.API.URL, conf.BBB.API.Secret, conf.BBB.WebRTC.WS)
 	if err != nil {
@@ -91,8 +78,8 @@ func main() {
 
 		fmt.Println("[" + msg.SenderName + "]: " + msg.Message)
 
-		if(msg.Sender != client.InternalUserID) {
-			if(msg.Message == "ping") {
+		if msg.Sender != client.InternalUserID {
+			if msg.Message == "ping" {
 				fmt.Println("Sending pong")
 				client.SendChatMsg("pong", msg.ChatId)
 			}
@@ -155,7 +142,7 @@ func main() {
 		if track.Kind() != webrtc.RTPCodecTypeAudio {
 			return
 		}
-	
+
 		go func() {
 			buffer := make([]byte, 1500)
 			for {
@@ -169,13 +156,13 @@ func main() {
 					fmt.Println("Error during audio track read:", readErr)
 					return
 				}
-	
+
 				rtpPacket := &rtp.Packet{}
 				if err := rtpPacket.Unmarshal(buffer[:n]); err != nil {
 					fmt.Println("Error during RTP packet unmarshal:", err)
 					return
 				}
-	
+
 				if err := oggFile.WriteRTP(rtpPacket); err != nil {
 					fmt.Println("Error during OGG file write:", err)
 					return
@@ -184,14 +171,11 @@ func main() {
 		}()
 	})
 
-
 	time.Sleep(20 * time.Second)
 
 	if err := audio.Close(); err != nil {
 		panic(err)
 	}
-
-	
 
 	fmt.Println("Bot leaves " + newmeeting.MeetingName)
 	err = client.Leave()
@@ -201,11 +185,7 @@ func main() {
 
 	time.Sleep(5 * time.Second)
 
-	
-
 	fmt.Println("-----------------------------------------------")
-
-
 
 	endedmeeting, err := bbbapi.EndMeeting(newmeeting.MeetingID)
 	if err != nil {
@@ -213,11 +193,7 @@ func main() {
 	}
 	fmt.Printf("Meeting \"%s\" was ended.\n", endedmeeting.MeetingName)
 
-
-
 	fmt.Println("-----------------------------------------------")
-
-
 
 	fmt.Println("All meetings:")
 	meetings, err = bbbapi.GetMeetings()
@@ -228,16 +204,6 @@ func main() {
 		fmt.Println(meeting.MeetingName)
 	}
 }
-
-
-
-
-
-
-
-
-
-
 
 /*
 {
@@ -295,14 +261,14 @@ type configBBB struct {
 }
 
 type config struct {
-	BBB configBBB `json:"bbb"`
+	BBB       configBBB       `json:"bbb"`
 	ChangeSet configChangeSet `json:"changeset"`
 }
 
 type configChangeSet struct {
-	External string   `json:"external"`
+	External string `json:"external"`
 	Host     string `json:"host"`
-	Port     string    `json:"port"`
+	Port     string `json:"port"`
 }
 
 func readConfig(file string) config {
@@ -335,8 +301,8 @@ func readConfig(file string) config {
 
 	if conf.BBB.API.URL != "" && conf.BBB.API.Secret != "" && conf.BBB.API.SHA != "" &&
 		conf.BBB.Client.URL != "" && conf.BBB.Client.WS != "" &&
-		conf.BBB.Pad.URL != "" && conf.BBB.Pad.WS != "" && 
-		conf.BBB.WebRTC.WS != "" && 
+		conf.BBB.Pad.URL != "" && conf.BBB.Pad.WS != "" &&
+		conf.BBB.WebRTC.WS != "" &&
 		conf.ChangeSet.Host != "" && conf.ChangeSet.Port != "" {
 		fmt.Println("Using env variables for config")
 		return conf

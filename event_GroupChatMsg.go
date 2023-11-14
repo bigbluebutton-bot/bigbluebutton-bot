@@ -1,13 +1,14 @@
 package bot
 
 import (
-	ddp "github.com/gopackage/ddp"
 	"errors"
 	"reflect"
 	"time"
 
-	bbb "github.com/ITLab-CC/bigbluebutton-bot/bbb"
+	ddp "github.com/gopackage/ddp"
+
 	"github.com/benpate/convert"
+	bbb "github.com/bigbluebutton-bot/bigbluebutton-bot/bbb"
 )
 
 type groupChatMsgListener func(msg bbb.Message)

@@ -1,11 +1,12 @@
 package bot
 
 import (
-	ddp "github.com/gopackage/ddp"
 	"errors"
 	"fmt"
 
-	bbb "github.com/ITLab-CC/bigbluebutton-bot/bbb"
+	ddp "github.com/gopackage/ddp"
+
+	bbb "github.com/bigbluebutton-bot/bigbluebutton-bot/bbb"
 )
 
 //--------------------------------------------------
@@ -74,8 +75,8 @@ func (c *Client) ddpSubscribe(collectionName bbb.SubType, callbackUpdater update
 	if err != nil {
 		return errors.New("could not subscribe to " + subname + ": " + err.Error())
 	}
-	collection := c.ddpClient.CollectionByName(subname)  // get the ddp collection
-	collection.AddUpdateListener(c.ddpEventHandler)      // add the update listener of the ddp collection
+	collection := c.ddpClient.CollectionByName(subname)                                              // get the ddp collection
+	collection.AddUpdateListener(c.ddpEventHandler)                                                  // add the update listener of the ddp collection
 	c.ddpEventHandler.updater[subname] = append(c.ddpEventHandler.updater[subname], callbackUpdater) // add the update handler
 	return nil
 }
