@@ -1,12 +1,12 @@
 [submodule "ddp-go"]
 	path = ddp-go
-	url = https://github.com/JulianKropp/ddp-go
+	url = https://github.com/bigbluebutton-bot/ddp-go
 [submodule "golang-socketio"]
 	path = golang-socketio
-	url = https://github.com/JulianKropp/golang-socketio
+	url = https://github.com/bigbluebutton-bot/golang-socketio
 [submodule "pad/server/etherpad-lite"]
 	path = pad/server/etherpad-lite
 	url = https://github.com/ether/etherpad-lite
-[submodule "pad/Changeset-grpc"]
-	path = pad/Changeset-grpc
-	url = https://github.com/JulianKropp/Changeset-grpc
+[submodule "pad/changeset-grpc"]
+	path = pad/changeset-grpc
+	url = https://github.com/bigbluebutton-bot/changeset-grpc

@@ -16,8 +16,8 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 
-	git "gopkg.in/src-d/go-git.v4" // with go modules disabled
 	"google.golang.org/grpc/connectivity"
+	git "gopkg.in/src-d/go-git.v4" // with go modules disabled
 )
 
 type ChangesetClient struct {
@@ -38,11 +38,11 @@ type ChangesetClient struct {
 
 func NewChangesetClient(ip string, port string) *ChangesetClient {
 	return &ChangesetClient{
-		ip: ip,
+		ip:   ip,
 		port: port,
 
 		Changsetserverpath: "./.changsetserver",
-		Downloadeurl: "https://github.com/JulianKropp/Changeset-grpc",
+		Downloadeurl:       "https://github.com/bigbluebutton-bot/changeset-grpc",
 	}
 }
 
@@ -81,8 +81,6 @@ func (cc *ChangesetClient) extractInfoFromSubmoduleFile(filename string) (*submo
 	return &info, nil
 }
 
-
-
 // Downloade changeset server files
 func (cc *ChangesetClient) downloadAndInstallChangesetServer() error {
 	// if folder cc.Changsetserverpath error
@@ -107,7 +105,7 @@ func (cc *ChangesetClient) downloadAndInstallChangesetServer() error {
 	}
 
 	// downloade submodule files
-	_, err = git.PlainClone(cc.Changsetserverpath + "/" + submoduleinfo.Path, false, &git.CloneOptions{
+	_, err = git.PlainClone(cc.Changsetserverpath+"/"+submoduleinfo.Path, false, &git.CloneOptions{
 		URL:      submoduleinfo.URL,
 		Progress: os.Stdout,
 	})
@@ -115,7 +113,6 @@ func (cc *ChangesetClient) downloadAndInstallChangesetServer() error {
 		return fmt.Errorf("could not download changeset server files (%s): %v", submoduleinfo.URL, err)
 	}
 
-	
 	// test if npm is installed
 	_, err = exec.LookPath("npm")
 	if err != nil {
@@ -182,7 +179,6 @@ func (cc *ChangesetClient) StartChangesetServer() error {
 		os.Exit(1)
 	}()
 
-
 	// try to connect 10 times
 	for i := 0; i < 10; i++ {
 		err = cc.autoConnect()
@@ -201,7 +197,6 @@ func (cc *ChangesetClient) StartChangesetServer() error {
 		}
 	}
 
-
 	fmt.Println("Changeset server started successfully")
 	return nil
 }
@@ -214,7 +209,7 @@ func (cc *ChangesetClient) StopChangesetServer() {
 
 func (cc *ChangesetClient) Connect() error {
 	var err error
-	cc.conn, err = grpc.Dial(cc.ip + ":" + cc.port, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	cc.conn, err = grpc.Dial(cc.ip+":"+cc.port, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		return fmt.Errorf("did not connect: %v", err)
 	}
@@ -237,7 +232,7 @@ func (cc *ChangesetClient) autoConnect() error {
 	if cc.conn.GetState() != connectivity.Ready {
 		cc.conn.Connect()
 	}
-	cc.ctx, cc.cancel = context.WithTimeout(context.Background(), time.Second * 5)
+	cc.ctx, cc.cancel = context.WithTimeout(context.Background(), time.Second*5)
 	return nil
 }
 

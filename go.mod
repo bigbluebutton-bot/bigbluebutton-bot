@@ -3,7 +3,7 @@ module github.com/ITLab-CC/bigbluebutton-bot
 go 1.20
 
 require (
-	github.com/JulianKropp/golang-socketio v0.0.0-20230816150715-bbc29a93ec5d
+	github.com/bigbluebutton-bot/golang-socketio v0.0.0-20230816150715-bbc29a93ec5d
 	github.com/benpate/convert v0.13.5
 	github.com/gopackage/ddp v0.0.6
 	github.com/gorilla/websocket v1.5.0

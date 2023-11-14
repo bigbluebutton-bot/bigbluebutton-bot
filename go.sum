@@ -1,5 +1,5 @@
-github.com/JulianKropp/golang-socketio v0.0.0-20230816150715-bbc29a93ec5d h1:YednRCWWnBYIechF05rniPb09n3Y7dm1Kgf7Aad9i+0=
-github.com/JulianKropp/golang-socketio v0.0.0-20230816150715-bbc29a93ec5d/go.mod h1:gYG7s8zBJyL7yIpe6w7JY1pY9egOGsr8v2afXLrtIEY=
+github.com/bigbluebutton-bot/golang-socketio v0.0.0-20230816150715-bbc29a93ec5d h1:YednRCWWnBYIechF05rniPb09n3Y7dm1Kgf7Aad9i+0=
+github.com/bigbluebutton-bot/golang-socketio v0.0.0-20230816150715-bbc29a93ec5d/go.mod h1:gYG7s8zBJyL7yIpe6w7JY1pY9egOGsr8v2afXLrtIEY=
 github.com/alcortesm/tgz v0.0.0-20161220082320-9c5fe88206d7 h1:uSoVVbwJiQipAclBbw+8quDsfcvFjOpI5iCf4p/cqCs=
 github.com/alcortesm/tgz v0.0.0-20161220082320-9c5fe88206d7/go.mod h1:6zEj6s6u/ghQa61ZWa/C2Aw3RkjiTBOix7dkqa1VLIs=
 github.com/anmitsu/go-shlex v0.0.0-20161002113705-648efa622239 h1:kFOfPq6dUM1hTo4JG6LR5AXSUEsOjtdm0kw0FtQtMJA=

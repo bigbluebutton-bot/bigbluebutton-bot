@@ -11,8 +11,8 @@ import (
 	"strconv"
 	"strings"
 
-	goSocketio "github.com/JulianKropp/golang-socketio"
-	goSocketioTransport "github.com/JulianKropp/golang-socketio/transport"
+	goSocketio "github.com/bigbluebutton-bot/golang-socketio"
+	goSocketioTransport "github.com/bigbluebutton-bot/golang-socketio/transport"
 	"golang.org/x/net/publicsuffix"
 )
 
@@ -37,7 +37,7 @@ type Pad struct {
 	LocationX int
 
 	ChangesetServerExternal bool
-	ChangesetClient *ChangesetClient
+	ChangesetClient         *ChangesetClient
 }
 
 // Create new pad
@@ -79,7 +79,7 @@ func NewPad(url string, wsURL string, sessionToken string, padId string, session
 		LocationX: 0,
 
 		ChangesetServerExternal: external,
-		ChangesetClient: NewChangesetClient(host, strconv.FormatInt(int64(port), 10)),
+		ChangesetClient:         NewChangesetClient(host, strconv.FormatInt(int64(port), 10)),
 	}
 }
 
