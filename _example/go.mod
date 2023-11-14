@@ -4,13 +4,13 @@ go 1.20
 
 require (
 	github.com/ITLab-CC/bigbluebutton-bot v0.1.0
-	github.com/pion/rtp v1.8.2
+	github.com/pion/rtp v1.8.3
 	github.com/pion/webrtc/v3 v3.2.21
-	github.com/pion/webrtc/v4 v4.0.0-beta.6
+	github.com/pion/webrtc/v4 v4.0.0-beta.7
 )
 
 require (
-	github.com/bigbluebutton-bot/golang-socketio v0.0.0-20230816150715-bbc29a93ec5d // indirect
+	github.com/JulianKropp/golang-socketio v0.0.0-20230816150715-bbc29a93ec5d // indirect
 	github.com/Microsoft/go-winio v0.6.1 // indirect
 	github.com/apex/log v1.9.0 // indirect
 	github.com/benpate/convert v0.13.5 // indirect
@@ -32,7 +32,7 @@ require (
 	github.com/pion/logging v0.2.2 // indirect
 	github.com/pion/mdns v0.0.9 // indirect
 	github.com/pion/randutil v0.1.0 // indirect
-	github.com/pion/rtcp v1.2.10 // indirect
+	github.com/pion/rtcp v1.2.12 // indirect
 	github.com/pion/sctp v1.8.9 // indirect
 	github.com/pion/sdp/v3 v3.0.6 // indirect
 	github.com/pion/srtp/v2 v2.0.17 // indirect
@@ -51,7 +51,7 @@ require (
 	golang.org/x/sys v0.13.0 // indirect
 	golang.org/x/text v0.13.0 // indirect
 	golang.org/x/tools v0.14.0 // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20231030173426-d783a09b4405 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20231016165738-49dd2c1f3d0b // indirect
 	google.golang.org/grpc v1.59.0 // indirect
 	google.golang.org/protobuf v1.31.0 // indirect
 	gopkg.in/src-d/go-billy.v4 v4.3.2 // indirect
