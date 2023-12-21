@@ -21,33 +21,66 @@ type configClient struct {
 	WS  string `json:"ws"`
 }
 
+type configPad struct {
+	URL string `json:"url"`
+	WS  string `json:"ws"`
+}
+
+type configWebRTC struct {
+	WS string `json:"ws"`
+}
+
 type configBBB struct {
-	API    configAPI	`json:"api"`
-	Client configClient	`json:"client"`
+	API    configAPI    `json:"api"`
+	Client configClient `json:"client"`
+	Pad    configPad    `json:"pad"`
+	WebRTC configWebRTC `json:"webrtc"`
 }
 
 type config struct {
-	BBB configBBB `json:"bbb"`
+	BBB       configBBB       `json:"bbb"`
+	ChangeSet configChangeSet `json:"changeset"`
 }
 
-// For reading config from a file or from environment variables
+type configChangeSet struct {
+	External string `json:"external"`
+	Host     string `json:"host"`
+	Port     string `json:"port"`
+}
+
 func readConfig(file string, t *testing.T) config {
 	// Try to read from env
-	conf := config {
+	conf := config{
 		BBB: configBBB{
 			API: configAPI{
-				URL: os.Getenv("BBB_API_URL"),
+				URL:    os.Getenv("BBB_API_URL"),
 				Secret: os.Getenv("BBB_API_SECRET"),
-				SHA: SHA(os.Getenv("BBB_API_SECRET")),
+				SHA:    SHA(os.Getenv("BBB_API_SHA")),
 			},
 			Client: configClient{
 				URL: os.Getenv("BBB_CLIENT_URL"),
-				WS: os.Getenv("BBB_CLIENT_WS"),
+				WS:  os.Getenv("BBB_CLIENT_WS"),
 			},
+			Pad: configPad{
+				URL: os.Getenv("BBB_PAD_URL"),
+				WS:  os.Getenv("BBB_PAD_WS"),
+			},
+			WebRTC: configWebRTC{
+				WS: os.Getenv("BBB_WEBRTC_WS"),
+			},
+		},
+		ChangeSet: configChangeSet{
+			External: os.Getenv("CHANGESET_EXTERNAL"),
+			Host:     os.Getenv("CHANGESET_HOST"),
+			Port:     os.Getenv("CHANGESET_PORT"),
 		},
 	}
 
-	if (conf.BBB.API.URL != "" && conf.BBB.API.Secret != "" && conf.BBB.API.SHA != "" && conf.BBB.Client.URL != "" && conf.BBB.Client.WS != ""){
+	if conf.BBB.API.URL != "" && conf.BBB.API.Secret != "" && conf.BBB.API.SHA != "" &&
+		conf.BBB.Client.URL != "" && conf.BBB.Client.WS != "" &&
+		conf.BBB.Pad.URL != "" && conf.BBB.Pad.WS != "" &&
+		conf.BBB.WebRTC.WS != "" &&
+		conf.ChangeSet.Host != "" && conf.ChangeSet.Port != "" {
 		fmt.Println("Using env variables for config")
 		return conf
 	}
@@ -55,18 +88,20 @@ func readConfig(file string, t *testing.T) config {
 	// Open our jsonFile
 	jsonFile, err := os.Open(file)
 	// if we os.Open returns an error then handle it
-	if (err != nil) {
-		fmt.Println(err)
+	if err != nil {
+		t.Errorf("readConfig(%s) FAILED: Error %s", file, err)
+		return conf
 	}
 	// defer the closing of our jsonFile so that we can parse it later on
 	defer jsonFile.Close()
 	// read our opened jsonFile as a byte array.
 	byteValue, err := io.ReadAll(jsonFile)
-	if(err != nil) {
-		panic(err)
+	if err != nil {
+		t.Errorf("readConfig(%s) FAILED: Error %s", file, err)
+		return conf
 	}
 	// we unmarshal our byteArray which contains our jsonFile's content into conf
-	json.Unmarshal([]byte(byteValue), &conf) 
+	json.Unmarshal([]byte(byteValue), &conf)
 
 	return conf
 }
