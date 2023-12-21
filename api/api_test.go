@@ -76,14 +76,41 @@ func readConfig(file string, t *testing.T) config {
 		},
 	}
 
-	if conf.BBB.API.URL != "" && conf.BBB.API.Secret != "" && conf.BBB.API.SHA != "" &&
-		conf.BBB.Client.URL != "" && conf.BBB.Client.WS != "" &&
-		conf.BBB.Pad.URL != "" && conf.BBB.Pad.WS != "" &&
-		conf.BBB.WebRTC.WS != "" &&
-		conf.ChangeSet.Host != "" && conf.ChangeSet.Port != "" {
-		fmt.Println("Using env variables for config")
+	// Track missing environment variables
+	missingEnvVars := []string{}
+
+	// Check and log each environment variable
+	envVars := map[string]*string{
+		"BBB_API_URL":         &conf.BBB.API.URL,
+		"BBB_API_SECRET":      &conf.BBB.API.Secret,
+		// Include other environment variables here
+		// "BBB_API_SHA":       &conf.BBB.API.SHA, // Uncomment and adjust as needed for SHA
+		"BBB_CLIENT_URL":      &conf.BBB.Client.URL,
+		"BBB_CLIENT_WS":       &conf.BBB.Client.WS,
+		"BBB_PAD_URL":         &conf.BBB.Pad.URL,
+		"BBB_PAD_WS":          &conf.BBB.Pad.WS,
+		"BBB_WEBRTC_WS":       &conf.BBB.WebRTC.WS,
+		"CHANGESET_EXTERNAL":  &conf.ChangeSet.External,
+		"CHANGESET_HOST":      &conf.ChangeSet.Host,
+		"CHANGESET_PORT":      &conf.ChangeSet.Port,
+	}
+
+	for envVar, value := range envVars {
+		if *value == "" {
+			fmt.Printf("Environment variable %s is not set\n", envVar)
+			missingEnvVars = append(missingEnvVars, envVar)
+		} else {
+			fmt.Printf("Environment variable %s is set\n", envVar)
+		}
+	}
+
+	if len(missingEnvVars) == 0 {
+		fmt.Println("All environment variables are set. Using env variables for config")
 		return conf
 	}
+
+	// Continue with attempting to read from the file if some env vars are missing
+	fmt.Println("Some environment variables are missing, attempting to read from config file:", file)
 
 	// Open our jsonFile
 	jsonFile, err := os.Open(file)
