@@ -49,7 +49,7 @@ The bot aims to utilize all the functionalities that a regular Big Blue Button u
    sudo tar -C /usr/local -xzf go1.xx.x.linux-amd64.tar.gz
    ```
 
-Replace `1.xx.x` with the latest version number. You can find the latest version number on the [official Go download page](https://golang.org/dl/).
+    Replace `1.xx.x` with the latest version number. You can find the latest version number on the [official Go download page](https://golang.org/dl/).
 
 3. Add Go to your PATH:
    ```bash
@@ -67,23 +67,28 @@ Replace `1.xx.x` with the latest version number. You can find the latest version
 Create a `config.json` file and insert the following configuration:
 ```json
 {
-    "bbb": {
-        "api": {
-            "url": "https://example.com/bigbluebutton/api/",
-            "secret": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-            "sha": "SHA256"
-        },
-        "client": {
-            "url": "https://example.com/html5client/",
-            "ws": "wss://example.com/html5client/websocket"
-        },
-        "pad": {
-            "url": "https://example.com/pad/",
-            "ws": "wss://example.com/pad/"
-        },
-        "webrtc": {
-            "ws": "wss://example.com/bbb-webrtc-sfu"
-        }
+    "bbb":{
+       "api":{
+          "url":"https://example.com/bigbluebutton/api/",
+          "secret":"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+          "sha":"SHA256"
+       },
+       "client":{
+          "url":"https://example.com/html5client/",
+          "ws":"wss://example.com/html5client/websocket"
+       },
+       "pad":{
+          "url":"https://example.com/pad/",
+          "ws":"wss://example.com/pad/"
+       },
+       "webrtc":{
+          "ws":"wss://example.com/bbb-webrtc-sfu"
+       }
+    },
+    "changeset": {
+        "external": "false",
+        "host": "0.0.0.0",
+        "port": "5051"
     }
 }
 ```
@@ -99,4 +104,4 @@ To retrieve the Big Blue Button secret/salt, execute the following command on th
    go run .
    ```
 
-Upon execution, the bot will create a new meeting room and join it. It will then initiate an English capture and write "Hello World" into it. Additionally, the bot will respond to messages sent in the main chat. For instance, if "ping" is written, the bot will reply with "pong".
+    Upon execution, the bot will create a new meeting room and join it. It will then initiate an English capture and write "Hello World" into it. Additionally, the bot will respond to messages sent in the main chat. For instance, if "ping" is written, the bot will reply with "pong".
