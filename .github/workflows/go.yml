@@ -31,4 +31,10 @@ jobs:
         BBB_API_SHA: ${{ secrets.BBB_API_SHA }}
         BBB_CLIENT_URL: ${{ secrets.BBB_CLIENT_URL }}
         BBB_CLIENT_WS: ${{ secrets.BBB_CLIENT_WS }}
+        BBB_PAD_URL: ${{ secrets.BBB_PAD_URL }}
+        BBB_PAD_WS: ${{ secrets.BBB_PAD_WS }}
+        BBB_WEBRTC_WS: ${{ secrets.BBB_WEBRTC_WS }}
+        CHANGESET_EXTERNAL: ${{ secrets.CHANGESET_EXTERNAL }}
+        CHANGESET_HOST: ${{ secrets.CHANGESET_HOST }}
+        CHANGESET_PORT: ${{ secrets.CHANGESET_PORT }}
       run: cd api && go test -v ./...

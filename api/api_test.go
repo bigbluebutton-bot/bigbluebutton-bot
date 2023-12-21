@@ -79,12 +79,14 @@ func readConfig(file string, t *testing.T) config {
 	// Track missing environment variables
 	missingEnvVars := []string{}
 
+	// Convert SHA to a string and store it in a temporary variable
+	tempSHA := string(conf.BBB.API.SHA)
+
 	// Check and log each environment variable
 	envVars := map[string]*string{
 		"BBB_API_URL":         &conf.BBB.API.URL,
 		"BBB_API_SECRET":      &conf.BBB.API.Secret,
-		// Include other environment variables here
-		// "BBB_API_SHA":       &conf.BBB.API.SHA, // Uncomment and adjust as needed for SHA
+		"BBB_API_SHA":         &tempSHA,
 		"BBB_CLIENT_URL":      &conf.BBB.Client.URL,
 		"BBB_CLIENT_WS":       &conf.BBB.Client.WS,
 		"BBB_PAD_URL":         &conf.BBB.Pad.URL,
@@ -99,8 +101,6 @@ func readConfig(file string, t *testing.T) config {
 		if *value == "" {
 			fmt.Printf("Environment variable %s is not set\n", envVar)
 			missingEnvVars = append(missingEnvVars, envVar)
-		} else {
-			fmt.Printf("Environment variable %s is set\n", envVar)
 		}
 	}
 
