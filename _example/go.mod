@@ -2,6 +2,8 @@ module bbb-example
 
 go 1.20
 
+replace github.com/bigbluebutton-bot/bigbluebutton-bot v0.1.1 => ../
+
 require (
 	github.com/bigbluebutton-bot/bigbluebutton-bot v0.1.1
 	github.com/pion/rtp v1.8.3
