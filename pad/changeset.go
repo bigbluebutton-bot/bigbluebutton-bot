@@ -18,6 +18,7 @@ import (
 
 	"google.golang.org/grpc/connectivity"
 	git "gopkg.in/src-d/go-git.v4" // with go modules disabled
+	"gopkg.in/src-d/go-git.v4/plumbing"
 )
 
 type ChangesetClient struct {
@@ -49,6 +50,7 @@ func NewChangesetClient(ip string, port string) *ChangesetClient {
 type submoduleInfo struct {
 	Path string
 	URL  string
+	Branch string
 }
 
 func (cc *ChangesetClient) extractInfoFromSubmoduleFile(filename string) (*submoduleInfo, error) {
@@ -67,11 +69,13 @@ func (cc *ChangesetClient) extractInfoFromSubmoduleFile(filename string) (*submo
 			info.Path = strings.TrimPrefix(line, "	path = ")
 		} else if strings.HasPrefix(line, "	url = ") {
 			info.URL = strings.TrimPrefix(line, "	url = ")
+		} else if strings.HasPrefix(line, "	branch = ") {
+			info.Branch = strings.TrimPrefix(line, "	branch = ")
 		}
 	}
 
 	if info.Path == "" || info.URL == "" {
-		return nil, fmt.Errorf("Pfad oder URL nicht gefunden")
+		return nil, fmt.Errorf("path or url not found in submodule file")
 	}
 
 	if err := scanner.Err(); err != nil {
@@ -105,10 +109,19 @@ func (cc *ChangesetClient) downloadAndInstallChangesetServer() error {
 	}
 
 	// downloade submodule files
-	_, err = git.PlainClone(cc.Changsetserverpath+"/"+submoduleinfo.Path, false, &git.CloneOptions{
-		URL:      submoduleinfo.URL,
-		Progress: os.Stdout,
-	})
+	if submoduleinfo.Branch == "" {
+		_, err = git.PlainClone(cc.Changsetserverpath+"/"+submoduleinfo.Path, false, &git.CloneOptions{
+			URL:      submoduleinfo.URL,
+			Progress: os.Stdout,
+		})
+	} else {
+		_, err = git.PlainClone(cc.Changsetserverpath+"/"+submoduleinfo.Path, false, &git.CloneOptions{
+			URL:      submoduleinfo.URL,
+			Progress: os.Stdout,
+			ReferenceName: plumbing.NewTagReferenceName(submoduleinfo.Branch),
+			SingleBranch:  true,
+		})
+	}
 	if err != nil {
 		return fmt.Errorf("could not download changeset server files (%s): %v", submoduleinfo.URL, err)
 	}
