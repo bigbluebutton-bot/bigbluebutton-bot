@@ -12,7 +12,7 @@ require (
 	github.com/pion/webrtc/v3 v3.2.22
 	golang.org/x/net v0.23.0
 	google.golang.org/grpc v1.59.0
-	google.golang.org/protobuf v1.31.0
+	google.golang.org/protobuf v1.33.0
 	gopkg.in/src-d/go-git.v4 v4.13.1
 )
 
