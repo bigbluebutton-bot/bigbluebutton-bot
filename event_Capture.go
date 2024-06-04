@@ -23,7 +23,200 @@ func getCookieByName(cookies []*http.Cookie, name string) string {
 	return result
 }
 
-func (c *Client) CreateCapture(language string, external bool, host string, port int) (*pad.Pad, error) {
+type Language string
+const (
+	af Language = "af"
+	ar Language = "ar"
+	az Language = "az"
+	bg_BG Language = "bg-BG"
+	bn Language = "bn"
+	ca Language = "ca"
+	cs_CZ Language = "cs-CZ"
+	da Language = "da"
+	de Language = "de"
+	dv Language = "dv"
+	el_GR Language = "el-GR"
+	eo Language = "eo"
+	es Language = "es"
+	es_419 Language = "es-419"
+	es_ES Language = "es-ES"
+	es_MX Language = "es-MX"
+	et Language = "et"
+	eu Language = "eu"
+	fa_IR Language = "fa-IR"
+	fi Language = "fi"
+	fr Language = "fr"
+	gl Language = "gl"
+	he Language = "he"
+	hi_IN Language = "hi-IN"
+	hr Language = "hr"
+	hu_HU Language = "hu-HU"
+	hy Language = "hy"
+	id Language = "id"
+	it_IT Language = "it-IT"
+	ja Language = "ja"
+	ka Language = "ka"
+	km Language = "km"
+	kn Language = "kn"
+	ko_KR Language = "ko-KR"
+	lo_LA Language = "lo-LA"
+	lt_LT Language = "lt-LT"
+	lv Language = "lv"
+	ml Language = "ml"
+	mn_MN Language = "mn-MN"
+	nb_NO Language = "nb-NO"
+	nl Language = "nl"
+	oc Language = "oc"
+	pl_PL Language = "pl-PL"
+	pt Language = "pt"
+	pt_BR Language = "pt-BR"
+	ro_RO Language = "ro-RO"
+	ru Language = "ru"
+	sk_SK Language = "sk-SK"
+	sl Language = "sl"
+	sr Language = "sr"
+	sv_SE Language = "sv-SE"
+	ta Language = "ta"
+	te Language = "te"
+	th Language = "th"
+	tr_TR Language = "tr-TR"
+	uk_UA Language = "uk-UA"
+	vi_VN Language = "vi-VN"
+	zh_CN Language = "zh-CN"
+	zh_TW Language = "zh-TW"
+)
+
+
+func (c * Client) LanguageShortToName(short Language) string {
+	switch short {
+			case af:
+		return "Afrikaans"
+	case ar:
+		return "العربية"
+	case az:
+		return "Azərbaycan dili"
+	case bg_BG:
+		return "Български"
+	case bn:
+		return "বাংলা"
+	case ca:
+		return "Català"
+	case cs_CZ:
+		return "Čeština"
+	case da:
+		return "Dansk"
+	case de:
+		return "Deutsch"
+	case dv:
+		return "ދިވެހި"
+	case el_GR:
+		return "Ελληνικά"
+	case eo:
+		return "Esperanto"
+	case es:
+		return "Español"
+	case es_419:
+		return "Español (Latinoamérica)"
+	case es_ES:
+		return "Español (España)"
+	case es_MX:
+		return "Español (México)"
+	case et:
+		return "eesti keel"
+	case eu:
+		return "Euskara"
+	case fa_IR:
+		return "فارسی"
+	case fi:
+		return "Suomi"
+	case fr:
+		return "Français"
+	case gl:
+		return "Galego"
+	case he:
+		return "עברית‏"
+	case hi_IN:
+		return "हिन्दी"
+	case hr:
+		return "Hrvatski"
+	case hu_HU:
+		return "Magyar"
+	case hy:
+		return "Հայերեն"
+	case id:
+		return "Bahasa Indonesia"
+	case it_IT:
+		return "Italiano"
+	case ja:
+		return "日本語"
+	case ka:
+		return "ქართული"
+	case km:
+		return "ភាសាខ្មែរ"
+	case kn:
+		return "ಕನ್ನಡ"
+	case ko_KR:
+		return "한국어 (韩国)"
+	case lo_LA:
+		return "ລາວ"
+	case lt_LT:
+		return "Lietuvių"
+	case lv:
+		return "Latviešu"
+	case ml:
+		return "മലയ" //
+	case mn_MN:
+		return "Монгол"
+	case nb_NO:
+		return "Norsk (bokmål)"
+	case nl:
+		return "Nederlands"
+	case oc:
+		return "Occitan"
+	case pl_PL:
+		return "Polski"
+	case pt:
+		return "Português"
+	case pt_BR:
+		return "Português (Brasil)"
+	case ro_RO:
+		return "Română"
+	case ru:
+		return "Русский"
+	case sk_SK:
+		return "Slovenčina (Slovakia)"
+	case sl:
+		return "Slovenščina"
+	case sr:
+		return "Српски"
+	case sv_SE:
+		return "Svenska"
+	case ta:
+		return "தமிழ்"
+	case te:
+		return "తెలుగు"
+	case th:
+		return "ภาษาไทย"
+	case tr_TR:
+		return "Türkçe"
+	case uk_UA:
+		return "Українська"
+	case vi_VN:
+		return "Tiếng Việt"
+	case zh_CN:
+		return "中文（中国）"
+	case zh_TW:
+		return "中文（台灣）"
+	default:
+		return ""
+	}
+}
+
+
+
+func (c *Client) CreateCapture(short Language, external bool, host string, port int) (*pad.Pad, error) {
+	lang := c.LanguageShortToName(short)
+
 	//Subscribe to captions, pads and pads-sessions
 	//Subscribe to captions
 	if err := c.ddpSubscribe(bbb.CaptionsSub, nil); err != nil {
@@ -47,12 +240,12 @@ func (c *Client) CreateCapture(language string, external bool, host string, port
 	padsSessionsCollection.AddUpdateListener(c.ddpEventHandler)
 
 	//Create caption and add this bot as owner to it
-	_, err := c.ddpCall(bbb.CreateGroupCall, "en", "captions", "English")
+	_, err := c.ddpCall(bbb.CreateGroupCall, string(short), "captions", lang)
 	if err != nil {
 		return nil, err
 	}
 
-	_, err = c.ddpCall(bbb.UpdateCaptionsOwnerCall, "en", "English")
+	_, err = c.ddpCall(bbb.UpdateCaptionsOwnerCall, string(short), lang)
 	if err != nil {
 		return nil, err
 	}
@@ -62,7 +255,7 @@ func (c *Client) CreateCapture(language string, external bool, host string, port
 	getPadIDtry := 0
 	for {
 		getPadIDtry++
-		result, err := c.ddpCall(bbb.GetPadIdCall, "en")
+		result, err := c.ddpCall(bbb.GetPadIdCall, string(short))
 		if err != nil {
 			return nil, err
 		}
@@ -80,7 +273,7 @@ func (c *Client) CreateCapture(language string, external bool, host string, port
 	}
 	fmt.Println("padID: " + padId)
 
-	_, err = c.ddpCall(bbb.CreateSessionCall, "en")
+	_, err = c.ddpCall(bbb.CreateSessionCall, string(short))
 	if err != nil {
 		return nil, err
 	}
@@ -104,7 +297,7 @@ func (c *Client) CreateCapture(language string, external bool, host string, port
 							if element3.Kind() == reflect.Map {
 								for _, e := range element3.MapKeys() {
 									element4 := element3.MapIndex(e)
-									if convert.String(e) == "en" {
+									if convert.String(e) == string(short) {
 										sessionID = convert.String(element4)
 										loop = false
 									}
@@ -119,7 +312,7 @@ func (c *Client) CreateCapture(language string, external bool, host string, port
 
 		if (getsessionIDtry % 10) == 9 {
 			fmt.Println("Retry to create and subscribe to pads-sessions")
-			_, err = c.ddpCall(bbb.CreateSessionCall, "en")
+			_, err = c.ddpCall(bbb.CreateSessionCall, string(short))
 			if err != nil {
 				fmt.Println("Failed to create pad session")
 			}
