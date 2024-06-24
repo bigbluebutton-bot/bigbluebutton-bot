@@ -36,6 +36,7 @@ const (
 	de Language = "de"
 	dv Language = "dv"
 	el_GR Language = "el-GR"
+	en Language = "en"
 	eo Language = "eo"
 	es Language = "es"
 	es_419 Language = "es-419"
@@ -111,6 +112,8 @@ func (c * Client) LanguageShortToName(short Language) string {
 		return "ދިވެހި"
 	case el_GR:
 		return "Ελληνικά"
+	case en:
+		return "English"
 	case eo:
 		return "Esperanto"
 	case es:
