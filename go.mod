@@ -10,7 +10,7 @@ require (
 	github.com/pion/interceptor v0.1.25
 	github.com/pion/sdp/v3 v3.0.6
 	github.com/pion/webrtc/v3 v3.2.22
-	golang.org/x/net v0.23.0
+	golang.org/x/net v0.26.0
 	google.golang.org/grpc v1.59.0
 	google.golang.org/protobuf v1.33.0
 	gopkg.in/src-d/go-git.v4 v4.13.1
@@ -46,9 +46,9 @@ require (
 	github.com/src-d/gcfg v1.4.0 // indirect
 	github.com/stretchr/testify v1.8.4 // indirect
 	github.com/xanzy/ssh-agent v0.2.1 // indirect
-	golang.org/x/crypto v0.21.0 // indirect
-	golang.org/x/sys v0.18.0 // indirect
-	golang.org/x/text v0.14.0 // indirect
+	golang.org/x/crypto v0.24.0 // indirect
+	golang.org/x/sys v0.21.0 // indirect
+	golang.org/x/text v0.16.0 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20230822172742-b8732ec3820d // indirect
 	gopkg.in/src-d/go-billy.v4 v4.3.2 // indirect
 	gopkg.in/warnings.v0 v0.1.2 // indirect
