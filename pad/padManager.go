@@ -16,6 +16,14 @@ import (
 	"golang.org/x/net/publicsuffix"
 )
 
+type Status int
+
+const (
+	CONNECTED Status = iota
+	DISCONNECTED
+	CONNECTING
+)
+
 type Pad struct {
 	URL          string //"https://example.com/pad/"
 	WsURL        string //"wss://example.com/pad/"
@@ -38,6 +46,12 @@ type Pad struct {
 
 	ChangesetServerExternal bool
 	ChangesetClient         *ChangesetClient
+
+	ShortLanguageName string
+	LanguageName      string
+
+	// status of the pad
+	status Status
 }
 
 // Create new pad
@@ -46,7 +60,7 @@ type Pad struct {
 // padId = g.9d4O2LRqTkIfh6bM$notes (from ddp. To get it c.ddpCall(bbb.GetPadIdCall, "en"))
 // sessionID = s.4918c0b0b9b7913b5e29334a50f58212 (from ddp. To get it padsSessionsCollection.FindAll())
 // cookie = client.SessionCookie
-func NewPad(url string, wsURL string, sessionToken string, padId string, sessionID string, cookie []*http.Cookie, external bool, host string, port int) *Pad {
+func NewPad(short, lang, url string, wsURL string, sessionToken string, padId string, sessionID string, cookie []*http.Cookie, external bool, host string, port int) *Pad {
 	// Add sessionID cookies
 	if getCookieByName(cookie, "sessionID") == "" {
 		cookie = append(cookie, &http.Cookie{Name: "sessionID", Value: sessionID}) //add sessionID cookies
@@ -80,6 +94,11 @@ func NewPad(url string, wsURL string, sessionToken string, padId string, session
 
 		ChangesetServerExternal: external,
 		ChangesetClient:         NewChangesetClient(host, strconv.FormatInt(int64(port), 10)),
+
+		ShortLanguageName: short,
+		LanguageName:      lang,
+
+		status: DISCONNECTED,
 	}
 }
 
@@ -120,14 +139,19 @@ func (p *Pad) RegisterSession() error {
 // Connect to the pad
 func (p *Pad) Connect() error {
 
+	// set status
+	p.status = CONNECTING
+
 	if !p.ChangesetServerExternal {
 		// Start changeset server
 		if err := p.ChangesetClient.StartChangesetServer(); err != nil {
+			p.status = DISCONNECTED
 			return err
 		}
 	}
 
 	if err := p.RegisterSession(); err != nil {
+		p.status = DISCONNECTED
 		return err
 	}
 
@@ -147,14 +171,17 @@ func (p *Pad) Connect() error {
 	//Create events
 	//On Connection
 	if err := p.Client.On(goSocketio.OnConnection, p.onConnect); err != nil {
+		p.status = DISCONNECTED
 		return err
 	}
 	//On Disconnection
 	if err := p.Client.On(goSocketio.OnDisconnection, p.onDisconnect); err != nil {
+		p.status = DISCONNECTED
 		return err
 	}
 	//On message
 	if err := p.Client.On("message", p.onInitMessage); err != nil {
+		p.status = DISCONNECTED
 		return err
 	}
 
@@ -163,10 +190,12 @@ func (p *Pad) Connect() error {
 		p.WsURL,
 		transport)
 	if err != nil {
+		p.status = DISCONNECTED
 		return err
 	} else {
 		fmt.Println("Connecting...")
 	}
+
 	return nil
 }
 
@@ -175,8 +204,19 @@ func (p *Pad) Disconnect() {
 	p.Client.Close()
 }
 
+// get status
+func (p *Pad) GetStatus() Status {
+	return p.status
+}
+
+func (p *Pad) OnDisconnect(f func()) {
+	p.Client.On(goSocketio.OnDisconnection, f)
+}
+
 func (p *Pad) onConnect(h *goSocketio.Channel) {
 	fmt.Println("Connected")
+	// set status
+	p.status = CONNECTED
 
 	// Send ClientReady
 	//212:42["message",{"component":"pad","type":"CLIENT_READY","padId":"g.9d4O2LRqTkIfh6bM$notes","sessionID":"s.4918c0b0b9b7913b5e29334a50f58212","token":"t.oNTJCeHhA5x2lI9rM5st","userInfo":{"colorId":null,"name":null}}]
@@ -210,6 +250,8 @@ func (p *Pad) onConnect(h *goSocketio.Channel) {
 
 func (p *Pad) onDisconnect(h *goSocketio.Channel) {
 	fmt.Println("Disconnected")
+
+	p.status = DISCONNECTED
 
 	// Stop changeset server
 	p.ChangesetClient.StopChangesetServer()

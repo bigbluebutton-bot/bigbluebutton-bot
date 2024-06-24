@@ -9,6 +9,7 @@ import (
 	"time"
 
 	api "github.com/bigbluebutton-bot/bigbluebutton-bot/api"
+	"github.com/bigbluebutton-bot/bigbluebutton-bot/pad"
 
 	bot "github.com/bigbluebutton-bot/bigbluebutton-bot"
 
@@ -98,9 +99,23 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	enCapture, err := client.CreateCapture("en", chsetExternal, chsetHost, chsetPort)
+	_, err = client.CreateCapture("en", chsetExternal, chsetHost, chsetPort)
 	if err != nil {
 		panic(err)
+	}
+
+	// You can also get a list of alle active captions for this bot.
+	var enCapture *pad.Pad
+	captions := client.GetCaptures()
+	for _, caption := range captions {
+		shortname := caption.ShortLanguageName
+		if shortname == "en" {
+			enCapture = caption
+			break
+		}
+	}
+	if enCapture == nil {
+		panic("No English caption found")
 	}
 
 	time.Sleep(1 * time.Second)

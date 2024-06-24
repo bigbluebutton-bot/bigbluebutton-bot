@@ -8,7 +8,7 @@ import (
 	"time"
 
 	bbb "github.com/bigbluebutton-bot/bigbluebutton-bot/bbb"
-	"github.com/bigbluebutton-bot/bigbluebutton-bot/pad"
+	pad "github.com/bigbluebutton-bot/bigbluebutton-bot/pad"
 
 	convert "github.com/benpate/convert"
 )
@@ -24,73 +24,73 @@ func getCookieByName(cookies []*http.Cookie, name string) string {
 }
 
 type Language string
+
 const (
-	af Language = "af"
-	ar Language = "ar"
-	az Language = "az"
-	bg_BG Language = "bg-BG"
-	bn Language = "bn"
-	ca Language = "ca"
-	cs_CZ Language = "cs-CZ"
-	da Language = "da"
-	de Language = "de"
-	dv Language = "dv"
-	el_GR Language = "el-GR"
-	en Language = "en"
-	eo Language = "eo"
-	es Language = "es"
+	af     Language = "af"
+	ar     Language = "ar"
+	az     Language = "az"
+	bg_BG  Language = "bg-BG"
+	bn     Language = "bn"
+	ca     Language = "ca"
+	cs_CZ  Language = "cs-CZ"
+	da     Language = "da"
+	de     Language = "de"
+	dv     Language = "dv"
+	el_GR  Language = "el-GR"
+	en     Language = "en"
+	eo     Language = "eo"
+	es     Language = "es"
 	es_419 Language = "es-419"
-	es_ES Language = "es-ES"
-	es_MX Language = "es-MX"
-	et Language = "et"
-	eu Language = "eu"
-	fa_IR Language = "fa-IR"
-	fi Language = "fi"
-	fr Language = "fr"
-	gl Language = "gl"
-	he Language = "he"
-	hi_IN Language = "hi-IN"
-	hr Language = "hr"
-	hu_HU Language = "hu-HU"
-	hy Language = "hy"
-	id Language = "id"
-	it_IT Language = "it-IT"
-	ja Language = "ja"
-	ka Language = "ka"
-	km Language = "km"
-	kn Language = "kn"
-	ko_KR Language = "ko-KR"
-	lo_LA Language = "lo-LA"
-	lt_LT Language = "lt-LT"
-	lv Language = "lv"
-	ml Language = "ml"
-	mn_MN Language = "mn-MN"
-	nb_NO Language = "nb-NO"
-	nl Language = "nl"
-	oc Language = "oc"
-	pl_PL Language = "pl-PL"
-	pt Language = "pt"
-	pt_BR Language = "pt-BR"
-	ro_RO Language = "ro-RO"
-	ru Language = "ru"
-	sk_SK Language = "sk-SK"
-	sl Language = "sl"
-	sr Language = "sr"
-	sv_SE Language = "sv-SE"
-	ta Language = "ta"
-	te Language = "te"
-	th Language = "th"
-	tr_TR Language = "tr-TR"
-	uk_UA Language = "uk-UA"
-	vi_VN Language = "vi-VN"
-	zh_CN Language = "zh-CN"
-	zh_TW Language = "zh-TW"
+	es_ES  Language = "es-ES"
+	es_MX  Language = "es-MX"
+	et     Language = "et"
+	eu     Language = "eu"
+	fa_IR  Language = "fa-IR"
+	fi     Language = "fi"
+	fr     Language = "fr"
+	gl     Language = "gl"
+	he     Language = "he"
+	hi_IN  Language = "hi-IN"
+	hr     Language = "hr"
+	hu_HU  Language = "hu-HU"
+	hy     Language = "hy"
+	id     Language = "id"
+	it_IT  Language = "it-IT"
+	ja     Language = "ja"
+	ka     Language = "ka"
+	km     Language = "km"
+	kn     Language = "kn"
+	ko_KR  Language = "ko-KR"
+	lo_LA  Language = "lo-LA"
+	lt_LT  Language = "lt-LT"
+	lv     Language = "lv"
+	ml     Language = "ml"
+	mn_MN  Language = "mn-MN"
+	nb_NO  Language = "nb-NO"
+	nl     Language = "nl"
+	oc     Language = "oc"
+	pl_PL  Language = "pl-PL"
+	pt     Language = "pt"
+	pt_BR  Language = "pt-BR"
+	ro_RO  Language = "ro-RO"
+	ru     Language = "ru"
+	sk_SK  Language = "sk-SK"
+	sl     Language = "sl"
+	sr     Language = "sr"
+	sv_SE  Language = "sv-SE"
+	ta     Language = "ta"
+	te     Language = "te"
+	th     Language = "th"
+	tr_TR  Language = "tr-TR"
+	uk_UA  Language = "uk-UA"
+	vi_VN  Language = "vi-VN"
+	zh_CN  Language = "zh-CN"
+	zh_TW  Language = "zh-TW"
 )
 
-
-func (c * Client) LanguageShortToName(short Language) string {
+func (c *Client) LanguageShortToName(short Language) string {
 	switch short {
-			case af:
+	case af:
 		return "Afrikaans"
 	case ar:
 		return "العربية"
@@ -215,8 +215,6 @@ func (c * Client) LanguageShortToName(short Language) string {
 	}
 }
 
-
-
 func (c *Client) CreateCapture(short Language, external bool, host string, port int) (*pad.Pad, error) {
 	lang := c.LanguageShortToName(short)
 
@@ -331,39 +329,34 @@ func (c *Client) CreateCapture(short Language, external bool, host string, port 
 	}
 	fmt.Println("sessionID: " + sessionID)
 
-	capturePad := pad.NewPad(c.PadURL, c.PadWSURL, c.SessionToken, padId, sessionID, c.SessionCookie, external, host, port)
+	capturePad := pad.NewPad(string(short), lang, c.PadURL, c.PadWSURL, c.SessionToken, padId, sessionID, c.SessionCookie, external, host, port)
 	if err := capturePad.Connect(); err != nil {
 		return nil, err
 	}
+
+	// Add capturePad to the list of pads
+	c.padMutex.Lock()
+	c.captures = append(c.captures, capturePad)
+	c.padMutex.Unlock()
+
+	capturePad.OnDisconnect(func() {
+		// Remove capturePad from the list of pads
+		c.padMutex.Lock()
+		for i, p := range c.captures {
+			if p == capturePad {
+				c.captures = append(c.captures[:i], c.captures[i+1:]...)
+				break
+			}
+		}
+		c.padMutex.Unlock()
+	})
+
 	return capturePad, nil
 }
 
-type captureListener func()
+func (c *Client) GetCaptures() []*pad.Pad {
+	c.padMutex.Lock()
+	defer c.padMutex.Unlock()
 
-// OnCapture in order to receive Capture changes.
-func (c *Client) OnCapture(language string, listener captureListener) error {
-	// if c.events["OnCapture"] == nil {
-	// 	c.CreateCapture(language)
-	// }
-
-	// c.events["OnCapture"] = append(c.events["OnCapture"], listener)
-
-	return nil
-}
-
-// informs all listeners with the new infos.
-func (c *Client) updateCapture() {
-	// // Inform all listeners
-	// for _, event := range c.events["OnCapture"] {
-
-	// 	// call event(infos)
-	// 	f := reflect.TypeOf(event)
-	// 	if f.Kind() == reflect.Func { //is function
-	// 		if f.NumIn() == 1 && f.NumOut() == 0 { //inbound parameters == 1, outbound parameters == 0
-	// 			if f.In(0).Kind() == reflect.Struct { //parameter 0 is of type string (string){ //parameter 3 is of type struct (ddp.Update)
-	// 				go reflect.ValueOf(event).Call([]reflect.Value{reflect.ValueOf(msg)})
-	// 			}
-	// 		}
-	// 	}
-	// }
+	return c.captures
 }

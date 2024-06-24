@@ -3,6 +3,7 @@ package bot
 import (
 	"errors"
 	"net/http"
+	"sync"
 	"time"
 
 	api "github.com/bigbluebutton-bot/bigbluebutton-bot/api"
@@ -10,6 +11,8 @@ import (
 	ddp "github.com/gopackage/ddp"
 
 	bbb "github.com/bigbluebutton-bot/bigbluebutton-bot/bbb"
+
+	pad "github.com/bigbluebutton-bot/bigbluebutton-bot/pad"
 )
 
 type StatusType string
@@ -52,6 +55,10 @@ type Client struct {
 	SessionToken      string
 	ExternalMeetingID string
 	InternalMeetingID string
+
+	// Pads (Captures and shared notes)
+	padMutex *sync.Mutex
+	captures []*pad.Pad
 }
 
 func NewClient(clientURL string, clientWSURL string, padURL string, padWSURL string, apiURL string, apiSecret string, webRTCWSURL string) (*Client, error) {
@@ -77,6 +84,9 @@ func NewClient(clientURL string, clientWSURL string, padURL string, padWSURL str
 
 		events:          make(map[string][]interface{}),
 		ddpEventHandler: nil,
+
+		padMutex: new(sync.Mutex),
+		captures: make([]*pad.Pad, 0),
 	}
 
 	c.ddpEventHandler = &ddpEventHandler{
