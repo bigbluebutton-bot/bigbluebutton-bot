@@ -10,6 +10,8 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
+	"sync"
+	"time"
 
 	goSocketio "github.com/bigbluebutton-bot/golang-socketio"
 	goSocketioTransport "github.com/bigbluebutton-bot/golang-socketio/transport"
@@ -25,6 +27,7 @@ const (
 )
 
 type Pad struct {
+	mu           sync.Mutex
 	URL          string //"https://example.com/pad/"
 	WsURL        string //"wss://example.com/pad/"
 	SessionToken string
@@ -164,6 +167,9 @@ func (p *Pad) Connect() error {
 	transport := goSocketioTransport.GetDefaultWebsocketTransport()
 	//Set cookies
 	transport.Cookie = jar
+
+	// Use smaller timout then 30s
+	transport.PingInterval = 20 * time.Second
 
 	//Create client
 	p.Client = goSocketio.NewClient()
@@ -339,6 +345,9 @@ type padTyping struct {
 }
 
 func (p *Pad) SetText(text string) error {
+	// Lock
+	p.mu.Lock()
+	defer p.mu.Unlock()
 
 	newtext := text
 	oldtext := p.Text
