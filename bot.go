@@ -99,6 +99,12 @@ func NewClient(clientURL string, clientWSURL string, padURL string, padWSURL str
 
 // Join a meeting
 func (c *Client) Join(meetingID string, userName string, moderator bool) error {
+	if c.Status != DISCONNECTED {
+		c.Leave()
+	}
+
+	c.Status = CONNECTING
+
 	joinURL, coockie, internalUserID, authToken, sessionToken, internalMeetingID, err := c.API.Join(meetingID, userName, moderator)
 	if err != nil {
 		return err
@@ -114,19 +120,24 @@ func (c *Client) Join(meetingID string, userName string, moderator bool) error {
 
 	// Connect to the DDP server
 	if err = c.ddpConnect(); err != nil {
+		c.Status = DISCONNECTED
 		return err
 	}
 
 	// Subscribe to the current user
 	if err = c.ddpSubscribe(bbb.CurrentUser, nil); err != nil {
+		c.Status = DISCONNECTED
 		return err
 	}
 
 	// Call the validateAuthToken method with the userID, authToken, and userName
 	_, err = c.ddpCall(bbb.ValidateAuthTokenCall, internalMeetingID, internalUserID, authToken, internalUserID)
 	if err != nil {
+		c.Status = DISCONNECTED
 		return errors.New("could not validateAuthToken")
 	}
+
+	c.Status = CONNECTED
 
 	return nil
 }
@@ -155,7 +166,7 @@ func (c *Client) Leave() error {
 
 	c.ddpDisconnect()
 
-	c.ddpClient = nil
+	c.Status = DISCONNECTED
 
 	return nil
 }

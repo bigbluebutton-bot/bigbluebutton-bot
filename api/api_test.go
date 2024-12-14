@@ -11,9 +11,9 @@ import (
 )
 
 type configAPI struct {
-	URL    string  `json:"url"`
-	Secret string  `json:"secret"`
-	SHA    SHA `json:"sha"`
+	URL    string `json:"url"`
+	Secret string `json:"secret"`
+	SHA    SHA    `json:"sha"`
 }
 
 type configClient struct {
@@ -84,17 +84,17 @@ func readConfig(file string, t *testing.T) config {
 
 	// Check and log each environment variable
 	envVars := map[string]*string{
-		"BBB_API_URL":         &conf.BBB.API.URL,
-		"BBB_API_SECRET":      &conf.BBB.API.Secret,
-		"BBB_API_SHA":         &tempSHA,
-		"BBB_CLIENT_URL":      &conf.BBB.Client.URL,
-		"BBB_CLIENT_WS":       &conf.BBB.Client.WS,
-		"BBB_PAD_URL":         &conf.BBB.Pad.URL,
-		"BBB_PAD_WS":          &conf.BBB.Pad.WS,
-		"BBB_WEBRTC_WS":       &conf.BBB.WebRTC.WS,
-		"CHANGESET_EXTERNAL":  &conf.ChangeSet.External,
-		"CHANGESET_HOST":      &conf.ChangeSet.Host,
-		"CHANGESET_PORT":      &conf.ChangeSet.Port,
+		"BBB_API_URL":        &conf.BBB.API.URL,
+		"BBB_API_SECRET":     &conf.BBB.API.Secret,
+		"BBB_API_SHA":        &tempSHA,
+		"BBB_CLIENT_URL":     &conf.BBB.Client.URL,
+		"BBB_CLIENT_WS":      &conf.BBB.Client.WS,
+		"BBB_PAD_URL":        &conf.BBB.Pad.URL,
+		"BBB_PAD_WS":         &conf.BBB.Pad.WS,
+		"BBB_WEBRTC_WS":      &conf.BBB.WebRTC.WS,
+		"CHANGESET_EXTERNAL": &conf.ChangeSet.External,
+		"CHANGESET_HOST":     &conf.ChangeSet.Host,
+		"CHANGESET_PORT":     &conf.ChangeSet.Port,
 	}
 
 	for envVar, value := range envVars {
@@ -402,7 +402,7 @@ func TestMakeRequest(t *testing.T) {
 			continue
 		}
 
-		var response responsegetmeetings
+		var response Responsegetmeetings
 		err = bbbapi.makeRequest(&response, test.action, test.params...)
 		if err != nil {
 			if !test.shouldfail {

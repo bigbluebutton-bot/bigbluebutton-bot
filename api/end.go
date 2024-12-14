@@ -9,11 +9,11 @@ type responseEndMeeting struct {
 }
 
 // Makes a http get request to the BigBlueButton API and returns the closed meeting
-func (api *ApiRequest) EndMeeting(meetingID string) (meeting, error) {
+func (api *ApiRequest) EndMeeting(meetingID string) (Meeting, error) {
 
 	meetings, err := api.GetMeetings()
 	if err != nil {
-		return meeting{}, err
+		return Meeting{}, err
 	}
 	m := meetings[meetingID]
 
@@ -31,7 +31,7 @@ func (api *ApiRequest) EndMeeting(meetingID string) (meeting, error) {
 	var response responseEndMeeting
 	err = api.makeRequest(&response, END, params...)
 	if err != nil {
-		return meeting{}, err
+		return Meeting{}, err
 	}
 
 	return m, nil

@@ -27,7 +27,7 @@ type responseCreateMeeting struct {
 }
 
 // Makes a http get request to the BigBlueButton API, creates a meeting and returns this new meeting
-func (api *ApiRequest) CreateMeeting(name string, meetingID string, attendeePW string, moderatorPW string, welcome string, allowStartStopRecording bool, autoStartRecording bool, record bool, voiceBridge int64) (meeting, error) {
+func (api *ApiRequest) CreateMeeting(name string, meetingID string, attendeePW string, moderatorPW string, welcome string, allowStartStopRecording bool, autoStartRecording bool, record bool, voiceBridge int64) (Meeting, error) {
 
 	params := []params{
 		{
@@ -72,26 +72,26 @@ func (api *ApiRequest) CreateMeeting(name string, meetingID string, attendeePW s
 	var response responseCreateMeeting
 	err := api.makeRequest(&response, CREATE, params...)
 	if err != nil {
-		return meeting{}, err
+		return Meeting{}, err
 	}
 
 	//Check if the request was successful
 	if response.ReturnCode != "SUCCESS" {
 		if response.MessageKey != "" && response.Message != "" {
-			return meeting{}, errors.New(response.MessageKey + ": " + response.Message)
+			return Meeting{}, errors.New(response.MessageKey + ": " + response.Message)
 		}
 		if response.Errors != nil {
 			if response.Errors[0].Key != "" && response.Errors[0].Message != "" {
-				return meeting{}, errors.New(response.Errors[0].Key + ": " + response.Errors[0].Message)
+				return Meeting{}, errors.New(response.Errors[0].Key + ": " + response.Errors[0].Message)
 			}
 		}
-		return meeting{}, errors.New("API response was not successful")
+		return Meeting{}, errors.New("API response was not successful")
 	}
 
 	//Get the meeting info
 	meetings, err := api.GetMeetings()
 	if err != nil {
-		return meeting{}, err
+		return Meeting{}, err
 	}
 
 	// Check if meeting already exists (duplicateWarning)
