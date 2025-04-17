@@ -88,7 +88,17 @@ const (
 	zh_TW  Language = "zh-TW"
 )
 
-func (c *Client) LanguageShortToName(short Language) string {
+func AllLanguages() []Language {
+	return []Language{
+		af, ar, az, bg_BG, bn, ca, cs_CZ, da, de, dv, el_GR, en, eo, es, es_419,
+		es_ES, es_MX, et, eu, fa_IR, fi, fr, gl, he, hi_IN, hr, hu_HU, hy, id,
+		it_IT, ja, ka, km, kn, ko_KR, lo_LA, lt_LT, lv, ml, mn_MN, nb_NO, nl,
+		oc, pl_PL, pt, pt_BR, ro_RO, ru, sk_SK, sl, sr, sv_SE, ta, te, th, tr_TR,
+		uk_UA, vi_VN, zh_CN, zh_TW,
+	}
+}
+
+func LanguageShortToName(short Language) string {
 	switch short {
 	case af:
 		return "Afrikaans"
@@ -216,7 +226,7 @@ func (c *Client) LanguageShortToName(short Language) string {
 }
 
 func (c *Client) CreateCapture(short Language, external bool, host string, port int) (*pad.Pad, error) {
-	lang := c.LanguageShortToName(short)
+	lang := LanguageShortToName(short)
 
 	//Subscribe to captions, pads and pads-sessions
 	//Subscribe to captions
