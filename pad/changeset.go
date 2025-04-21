@@ -48,8 +48,8 @@ func NewChangesetClient(ip string, port string) *ChangesetClient {
 }
 
 type submoduleInfo struct {
-	Path string
-	URL  string
+	Path   string
+	URL    string
 	Branch string
 }
 
@@ -116,8 +116,8 @@ func (cc *ChangesetClient) downloadAndInstallChangesetServer() error {
 		})
 	} else {
 		_, err = git.PlainClone(cc.Changsetserverpath+"/"+submoduleinfo.Path, false, &git.CloneOptions{
-			URL:      submoduleinfo.URL,
-			Progress: os.Stdout,
+			URL:           submoduleinfo.URL,
+			Progress:      os.Stdout,
 			ReferenceName: plumbing.NewTagReferenceName(submoduleinfo.Branch),
 			SingleBranch:  true,
 		})
@@ -215,8 +215,10 @@ func (cc *ChangesetClient) StartChangesetServer() error {
 }
 
 func (cc *ChangesetClient) StopChangesetServer() {
-	if cc.changsetServerProcess.Process != nil {
-		cc.changsetServerProcess.Process.Kill()
+	if cc.changsetServerProcess != nil {
+		if cc.changsetServerProcess.Process != nil {
+			cc.changsetServerProcess.Process.Kill()
+		}
 	}
 }
 

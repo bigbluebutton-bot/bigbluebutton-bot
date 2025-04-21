@@ -260,6 +260,8 @@ func (p *Pad) onDisconnect(h *goSocketio.Channel) {
 	p.status = DISCONNECTED
 
 	// Stop changeset server
+	p.Client.Close()
+	p.ChangesetClient.Close()
 	p.ChangesetClient.StopChangesetServer()
 }
 
