@@ -17,8 +17,8 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 
 	"google.golang.org/grpc/connectivity"
-	git "gopkg.in/src-d/go-git.v4" // with go modules disabled
-	"gopkg.in/src-d/go-git.v4/plumbing"
+	git "github.com/go-git/go-git/v5" // with go modules disabled
+	"github.com/go-git/go-git/v5/plumbing"
 )
 
 type ChangesetClient struct {
