@@ -10,7 +10,7 @@ require (
 	github.com/go-git/go-git/v5 v5.16.0
 	github.com/gopackage/ddp v0.0.6
 	github.com/gorilla/websocket v1.5.3
-	github.com/pion/interceptor v0.1.37
+	github.com/pion/interceptor v0.1.39
 	github.com/pion/sdp/v3 v3.0.11
 	github.com/pion/webrtc/v3 v3.3.5
 	golang.org/x/net v0.39.0
@@ -38,11 +38,11 @@ require (
 	github.com/pion/datachannel v1.5.8 // indirect
 	github.com/pion/dtls/v2 v2.2.12 // indirect
 	github.com/pion/ice/v2 v2.3.36 // indirect
-	github.com/pion/logging v0.2.2 // indirect
+	github.com/pion/logging v0.2.3 // indirect
 	github.com/pion/mdns v0.0.12 // indirect
 	github.com/pion/randutil v0.1.0 // indirect
-	github.com/pion/rtcp v1.2.14 // indirect
-	github.com/pion/rtp v1.8.9 // indirect
+	github.com/pion/rtcp v1.2.15 // indirect
+	github.com/pion/rtp v1.8.18 // indirect
 	github.com/pion/sctp v1.8.19 // indirect
 	github.com/pion/srtp/v2 v2.0.20 // indirect
 	github.com/pion/stun v0.6.1 // indirect
