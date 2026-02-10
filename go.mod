@@ -1,19 +1,19 @@
 module github.com/bigbluebutton-bot/bigbluebutton-bot
 
-go 1.23.0
+go 1.24.0
 
 toolchain go1.24.2
 
 require (
 	github.com/benpate/convert v0.13.5
 	github.com/bigbluebutton-bot/golang-socketio v0.1.0
-	github.com/go-git/go-git/v5 v5.16.0
+	github.com/go-git/go-git/v5 v5.16.5
 	github.com/gopackage/ddp v0.0.6
 	github.com/gorilla/websocket v1.5.3
 	github.com/pion/interceptor v0.1.37
 	github.com/pion/sdp/v3 v3.0.11
 	github.com/pion/webrtc/v3 v3.3.5
-	golang.org/x/net v0.39.0
+	golang.org/x/net v0.47.0
 	google.golang.org/grpc v1.72.0
 	google.golang.org/protobuf v1.36.6
 )
@@ -56,9 +56,9 @@ require (
 	github.com/stretchr/testify v1.10.0 // indirect
 	github.com/wlynxg/anet v0.0.3 // indirect
 	github.com/xanzy/ssh-agent v0.3.3 // indirect
-	golang.org/x/crypto v0.37.0 // indirect
-	golang.org/x/sys v0.32.0 // indirect
-	golang.org/x/text v0.24.0 // indirect
+	golang.org/x/crypto v0.45.0 // indirect
+	golang.org/x/sys v0.38.0 // indirect
+	golang.org/x/text v0.31.0 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20250218202821-56aae31c358a // indirect
 	gopkg.in/warnings.v0 v0.1.2 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
